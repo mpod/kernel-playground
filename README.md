@@ -4,25 +4,13 @@ platform, and QEMU. Focus is basically on ARM architecture.
 
 ## Setup ##
 
-### Hardware ###
-Code from this repository is implemented for following hardware:
-* [Raspberry Pi] (https://www.raspberrypi.org/)
-* [Adafruit Adafruit BMP280 I2C or SPI Barometric Pressure & Altitude Sensor] 
-  (https://www.adafruit.com/products/2651)
+* Used hardware:
+  * [Raspberry Pi] (https://www.raspberrypi.org/)
+  * [Adafruit Adafruit BMP280 I2C or SPI Barometric Pressure & Altitude Sensor] 
+    (https://www.adafruit.com/products/2651)
+* [Raspbian](https://www.raspberrypi.org/downloads/raspbian/) operating system
+* arm-none-eabi-gcc cross compiler downloaded from 
+  [https://launchpad.net/gcc-arm-embedded/](https://launchpad.net/gcc-arm-embedded/) 
+* Linux kernel source code customized for Raspberry Pi cloned from 
+  [https://github.com/raspberrypi/linux](https://github.com/raspberrypi/linux)
 
-### Raspbian ###
-It is recommended to download and install
-[Raspbian](https://www.raspberrypi.org/downloads/raspbian/) operating system on 
-Raspberry Pi. Examples from the repository are tested on Raspbian OS.
-
-
-### Toolchain ###
-One way is to download and extract ARM toolchain package from 
-[https://launchpad.net/gcc-arm-embedded/](https://launchpad.net/gcc-arm-embedded/).  
-It is useful to add bin directory of extracted package to PATH environment 
-variable. Another way is just to install arm-none-eabi-gcc package from Linux 
-distribution repository.
-
-## Linux kernel ##
-
-    $ git clone https://github.com/raspberrypi/linux
