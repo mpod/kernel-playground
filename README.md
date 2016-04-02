@@ -14,3 +14,6 @@ platform, and QEMU. Focus is basically on ARM architecture.
 * Linux kernel source code customized for Raspberry Pi cloned from 
   [https://github.com/raspberrypi/linux](https://github.com/raspberrypi/linux)
 
+
+![Git log](http://mpod.github.io/img/log.png)
+
