@@ -47,18 +47,20 @@ $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig
 Examples from this repository require support for I2C and Industrial I/O. Select 
 appropriate options in kernel configuration.
 
-* Device Drivers --->
-  * I2C support --->
-    * <M> I2C device interface
-  * <M> Industrial I/O support --->
-    * -*- Enable buffer supper within IIO
-      * [*] IIO callback buffer used for push in-kernel interface
-      * -M- Industrial I/O buffering based on kfifo
-    * -*- Enable triggered sampling support
-      * (2) Maximum number of consumers per trigger
-    * Triggers - standalone --->
-      * <M> Generic interrupt trigger
-      * <M> SYSFS trigger
+```
+Device Drivers --->
+    I2C support --->
+        <M> I2C device interface
+    <M> Industrial I/O support --->
+        -*- Enable buffer supper within IIO
+            [*] IIO callback buffer used for push in-kernel interface
+            -M- Industrial I/O buffering based on kfifo
+        -*- Enable triggered sampling support
+            (2) Maximum number of consumers per trigger
+        Triggers - standalone --->
+            <M> Generic interrupt trigger
+            <M> SYSFS trigger
+```
 
 Compile modules.
 ```
