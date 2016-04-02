@@ -129,10 +129,10 @@ d0: 58 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00    X?..............
 e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
 f0: 00 00 00 00 57 90 00 5b 95 40 7f 2b 00 00 00 00    ....W?.[?@?+....
 ```
-From (BMP280 documentation)
-[https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf] 
+From [BMP280 documentation]
+(https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf) 
 it is known that register at address 0xD0 contains chip id of value 0x58, which 
 is actually visible in output of i2cdump command.
 
-Register value can be set with i2cset command. Check out in BMP280 documentation 
-how to put device in measurement mode.
+Register value can be changed with i2cset command. Check out in BMP280 
+documentation how to put device in measurement mode.
