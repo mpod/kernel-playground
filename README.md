@@ -17,15 +17,18 @@ platform, and QEMU. Focus is basically on ARM architecture.
 
 ![Git log](http://mpod.github.io/img/log.png)
 
-  ...
-  | | | * | | cd14299 BCM270X_DT: Adjust overlay README formatting
-  | | | |/ /  
-  | | | * | 0108373 Revert "bcm270x_dt: Use the sdhost MMC controller by default"
-  | | | * |   6330c27 (HEAD, tag: rpi-bootloader-1.20160202-1) Merge remote-tracking branch 'stable/linux-4.1.y' into rpi-4.1.y
-  | | | |\ \  
-  | | | | |/  
-  | | | | * 2d5f6b0 Linux 4.1.17
-  | | | | * d17367a recordmcount: Fix endianness handling bug for nop_mcount
-  ...
+
+```
+...
+| | | * | | cd14299 BCM270X_DT: Adjust overlay README formatting
+| | | |/ /  
+| | | * | 0108373 Revert "bcm270x_dt: Use the sdhost MMC controller by default"
+| | | * |   6330c27 (HEAD, tag: rpi-bootloader-1.20160202-1) Merge remote-tracking branch 'stable/linux-4.1.y' into rpi-4.1.y
+| | | |\ \  
+| | | | |/  
+| | | | * 2d5f6b0 Linux 4.1.17
+| | | | * d17367a recordmcount: Fix endianness handling bug for nop_mcount
+...
+```
 
 
