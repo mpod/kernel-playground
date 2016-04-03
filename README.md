@@ -3,7 +3,7 @@ This repository describes steps in creating Linux kernel driver for [Adafruit
 BMP I2C or SPI Barometric Pressure & Altitude 
 Sensor](https://www.adafruit.com/products/2651). Driver was tested on [Raspberry 
 Pi](https://www.raspberrypi.org/) with 
-[Raspbian](https://www.raspberrypi.org/downloads/raspbian/) OS installed.  
+[Raspbian](https://www.raspberrypi.org/downloads/raspbian/) OS installed. 
 Development was done on desktop computer using 
 [arm-none-eabi-gcc](https://launchpad.net/gcc-arm-embedded/) cross compiler 
 toolchain.
@@ -82,27 +82,37 @@ pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF5 0x90
 ```
 
 Sensor in normal mode periodically cycles between standby and measurement 
-periods. In measurement period sensor 
-
-Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent runs of 
-`i2cdump` shows that values in those registries are changing over time. More 
-information about registries can be found in In [BMP280 
+periods. Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent 
+runs of `i2cdump` shows that values in those registries are changing over time. 
+More information about registries can be found in In [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf).
 
 
-## Linux kernel setup ##
+## Setting up Linux kernel source code ##
 
-Clone Linux Raspberry Pi repository.
+The Linux kernel header files should be available for building driver code. One 
+way to achieve this is to download and use Linux kernel source code. Since the 
+driver is going to be used on Rasperry Pi, it is recommended to use Raspbian 
+version of Linux kernel. Clone Linux kernel source code. 
+
 ```
-$ git clone https://github.com/raspberrypi/linux
+$ git clone https://github.com/raspberrypi/linux linux-raspi
 ```
-Find out kernel version used in Raspbian OS.
+
+It is recommended to clone kernel files to `linux-raspi` directory because 
+driver's `Makefile` is set to search for header files in `../../linux-raspi`.  
+Next step is to checkout kernel files to the same kernel version used on 
+Raspberry Pi. Find kernel version on Raspberry Pi.
+
 ```
 pi@raspberrypi:~ $ uname -a
 Linux raspberrypi 4.1.17-v7+ #838 SMP Tue Feb 9 13:15:09 GMT 2016 armv7l GNU/Linux
 ```
-Search in git log for commit related to kernel version 4.1.17.
+In my case version `4.1.17` is used. To find right commit in git tree run `git 
+log` command and search for `4.1.17`.
+
 ```
+$ cd linux-raspi
 $ git log --oneline --decorate --graph --all
 ...
 | | | * | | cd14299 BCM270X_DT: Adjust overlay README formatting
@@ -115,21 +125,24 @@ $ git log --oneline --decorate --graph --all
 | | | | * d17367a recordmcount: Fix endianness handling bug for nop_mcount
 ...
 ```
-Checkout commit 6330c27.
+From git log is visible that commit `6330c27` is a merge of Raspbian branch and 
+Linux kernel version `4.1.17`. Checkout commit `6330c27`.
+
 ```
 $ git checkout 6330c27
 ```
-Configure kernel.
+
+BMP280 driver depends on Industrial I/0 support that it is not enabled by 
+default inside Raspbian OS. So configure kernel first.
+
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig
 ```
-Examples from this repository require support for I2C and Industrial I/O. Select 
-appropriate options in kernel configuration.
+
+Select `Industrial I/O support` options.
 
 ```
 Device Drivers --->
-    I2C support --->
-        <M> I2C device interface
     <M> Industrial I/O support --->
         -*- Enable buffer supper within IIO
             [*] IIO callback buffer used for push in-kernel interface
@@ -141,58 +154,33 @@ Device Drivers --->
             <M> SYSFS trigger
 ```
 
-Compile modules.
+And compile IIO modules.
+
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- modules
 ```
 
-Generated files are:
+Copy following files to Raspberry Pi.
+
 ```
-drivers/i2c/i2c-dev.ko
 drivers/iio/industrialio.ko
 drivers/iio/kfifo_buf.ko
 drivers/iio/trigger/iio-trig-sysfs.ko
 drivers/iio/trigger/iio-trig-interrupt.ko
 ```
 
-Copy them to Raspberry Pi.
-
-
-
 ## Linux driver for BMP280 sensor ##
 
-File `bmp280/bmp280.c` is an implementation of Linux driver for BMP280 sensor.  
-It communicates with BMP280 sensor over I2C interface. Implementation is based 
-on I2C support in Linux kernel, and on Industrial I/O kernel subsystem.  
-References about those two subsystems:
-* I2C
-    * [Documentation/i2c](https://github.com/raspberrypi/linux/tree/rpi-4.1.y/Documentation/i2c) 
-      files in the kernel tree.
-    * Linux Kernel HTML Documentation, [Chapter 11. I2C and SMBus 
-      Subsystem](https://www.kernel.org/doc/htmldocs/device-drivers/i2c.html)
-    * [Linux Journal, I2C Drivers, Part 
-      I](http://www.linuxjournal.com/article/7136)
-    * [Linux Journal, I2C Drivers, Part II](http://www.linuxjournal.com/article/7252)
-* Industrial I/O
-    * Linux Kernel HTML Documentation, [Industrial I/O driver developer's 
-      guide](https://www.kernel.org/doc/htmldocs/iio/index.html)
-    * [Analog Devices, Linux Industrial I/O 
-      Subsystem](https://wiki.analog.com/software/linux/docs/iio/iio)
-    * [IIO, a new kernel 
-      subsystem](https://archive.fosdem.org/2012/schedule/event/693/127_iio-a-new-subsystem.pdf) 
-    * [Industrial I/O Subsystem: The Home of Linux 
-      Sensors](https://www.overleaf.com/articles/industrial-i-slash-o/dmqjqpzswtvb/viewer.pdf)
-    * [drivers/stagging/iio/Documentation](https://github.com/raspberrypi/linux/tree/rpi-4.1.y/drivers/staging/iio/Documentation) 
-      files in the kernel tree.
-
-To compile BMP280 driver execute:
+Driver for BMP280 sensor is implemented in `bmp280/bmp280.c` file.  
+Implementation is based on I2C and IIO support from Linux kernel. Compile driver 
+with:
 
 ```
 $ cd bmp280
 $ make
 ```
 
-Result is file `bmp280/bmp280.ko`. Copy the file to Raspberry Pi.
+Copy `bmp280/bmp280.ko` file to Raspberry Pi.
 
 ### Testing BMP280 driver ###
 
@@ -223,3 +211,25 @@ fuse                   82598  1
 ipv6                  343556  30 
 ```
 
+
+## References ##
+
+* I2C
+    * [Documentation/i2c](https://github.com/raspberrypi/linux/tree/rpi-4.1.y/Documentation/i2c) 
+      files in the kernel tree.
+    * Linux Kernel HTML Documentation, [Chapter 11. I2C and SMBus 
+      Subsystem](https://www.kernel.org/doc/htmldocs/device-drivers/i2c.html)
+    * [Linux Journal, I2C Drivers, Part 
+      I](http://www.linuxjournal.com/article/7136)
+    * [Linux Journal, I2C Drivers, Part II](http://www.linuxjournal.com/article/7252)
+* Industrial I/O
+    * Linux Kernel HTML Documentation, [Industrial I/O driver developer's 
+      guide](https://www.kernel.org/doc/htmldocs/iio/index.html)
+    * [Analog Devices, Linux Industrial I/O 
+      Subsystem](https://wiki.analog.com/software/linux/docs/iio/iio)
+    * [IIO, a new kernel 
+      subsystem](https://archive.fosdem.org/2012/schedule/event/693/127_iio-a-new-subsystem.pdf) 
+    * [Industrial I/O Subsystem: The Home of Linux 
+      Sensors](https://www.overleaf.com/articles/industrial-i-slash-o/dmqjqpzswtvb/viewer.pdf)
+    * [drivers/stagging/iio/Documentation](https://github.com/raspberrypi/linux/tree/rpi-4.1.y/drivers/staging/iio/Documentation) 
+      files in the kernel tree.
