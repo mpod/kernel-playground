@@ -14,13 +14,13 @@ toolchain.
 To assemble BMP280 sensor follow directions from 
 [here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
 The link describes pins on sensor side, while information about pins on 
-Raspberry Pi side can be found 
-[here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
+Raspberry Pi side can be found [here]
+(http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
 I2C interface of the BMP280 sensor should be used. To learn more about I2C check 
 out following 
 [link](http://www.esacademy.com/en/library/technical-articles-and-documents/miscellaneous/i2c-bus.html).
 
-Install `i2c-tools` to Raspberry Pi. This package contains tools for easy 
+Install `i2c-tools` on Raspberry Pi. This package contains tools for easy 
 debugging I2C devices from command line.
 
 ```
