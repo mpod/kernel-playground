@@ -17,8 +17,8 @@ Sensor provides I2C and SPI interface, but for the purpose of this exercise we
 will use only I2C. Information about I2C related pins on Raspberry Pi side can 
 be found [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
 
-Tools from `i2c-tools` package can be used for easy debugging I2C devices from 
-command line. Install `i2c-tools` on Raspberry Pi. 
+Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
+from command line. Install `i2c-tools` on Raspberry Pi. 
 
 ```
 pi@raspberrypi: sudo apt-get install i2c-tools
@@ -40,7 +40,7 @@ pi@raspberrypi:~ $ i2cdetect -y 1
 70: -- -- -- -- -- -- -- 77
 ```
 
-From results of the `i2cdetect` we can conclude that some device exists at 
+From results of the `i2cdetect` tool we can conclude that some device exists at 
 address `0x77`. Program `i2cdump` can be used for reading registers of the I2C 
 device at this address. 
 
@@ -67,12 +67,10 @@ f0: 00 00 00 00 00 00 00 80 00 00 80 00 00 00 00 00    .......?..?.....
 ```
 Value `0x58` at address `0xD0` is interesting. In [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf) 
-is written that register at address `0xD0` contains chip id of value `0x58`.  
-This confirms that device at address `0x77` is indeed BMP280 sensor.
-
-It is also visible that device is in sleep mode, because bits `0`, and `1` of 
-register `0xF4` are not set. Execute following commands to put sensor in normal 
-mode.
+is written that register at address `0xD0` contains chip id of value `0x58`. 
+This confirms that device at address `0x77` is indeed BMP280 sensor. It is also 
+visible that device is in sleep mode, because bits `0`, and `1` of register 
+`0xF4` are not set. Execute following commands to put sensor in normal mode.
 
 ```
 pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF4 0x57
@@ -81,7 +79,7 @@ pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF5 0x90
 
 Sensor in normal mode periodically cycles between standby and measurement 
 periods. Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent 
-runs of `i2cdump` shows that values in those registries are changing over time.  
+runs of `i2cdump` shows that values in those registries are changing over time. 
 More information about BMP280 registries can be found in [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf).
 
@@ -98,7 +96,7 @@ $ git clone https://github.com/raspberrypi/linux linux-raspi
 ```
 
 It is recommended to clone kernel files to `linux-raspi` directory because 
-driver's `Makefile` is set to search for header files in `../../linux-raspi`.  
+driver's `Makefile` is set to search for header files in `../../linux-raspi`. 
 Next step is to checkout kernel files to the same kernel version used on 
 Raspberry Pi. Find kernel version on Raspberry Pi.
 
@@ -106,8 +104,8 @@ Raspberry Pi. Find kernel version on Raspberry Pi.
 pi@raspberrypi:~ $ uname -a
 Linux raspberrypi 4.1.17-v7+ #838 SMP Tue Feb 9 13:15:09 GMT 2016 armv7l GNU/Linux
 ```
-In my case version `4.1.17` is used. To find right commit in git tree run `git 
-log` command and search for `4.1.17`.
+In my case version `4.1.17` is used. To find right commit in git history run 
+`git log` command and search for `4.1.17` string.
 
 ```
 $ cd linux-raspi
@@ -169,9 +167,9 @@ drivers/iio/trigger/iio-trig-interrupt.ko
 
 ## Linux driver for BMP280 sensor ##
 
-Driver for BMP280 sensor is implemented in `bmp280/bmp280.c` file.  
-Implementation is based on I2C and IIO support from Linux kernel. Compile driver 
-with:
+Driver for BMP280 sensor is implemented in `bmp280/bmp280.c` file. 
+Implementation is based on I2C and IIO support from Linux kernel. Runt `make` to 
+compile the driver source code. 
 
 ```
 $ cd bmp280
