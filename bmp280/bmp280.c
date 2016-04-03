@@ -7,9 +7,8 @@
  * the GNU General Public License.  See the file COPYING in the main
  * directory of this archive for more details.
  *
- * Driver for the 
+ * Driver for the Bosch BMP280 Digital Pressure Sensor 
  *
- * TODO: data ready irq
  */
 
 #include <linux/err.h>
@@ -39,33 +38,33 @@
 #define BMP280_PRESSURE_COMP_START_REG       (0x8E)
 #define BMP280_PRESSURE_COMP_REG_COUNT       18
 
-#define BMP280_OSRS_TEMP_MASK	             	 (BIT(7) | BIT(6) | BIT(5))
-#define BMP280_OSRS_TEMP_SKIP		             0
-#define BMP280_OSRS_TEMP_1X		               BIT(5)
-#define BMP280_OSRS_TEMP_2X		               BIT(6)
-#define BMP280_OSRS_TEMP_4X		               (BIT(6) | BIT(5))
-#define BMP280_OSRS_TEMP_8X		               BIT(7)
-#define BMP280_OSRS_TEMP_16X		             (BIT(7) | BIT(5))
+#define BMP280_OSRS_TEMP_MASK                (BIT(7) | BIT(6) | BIT(5))
+#define BMP280_OSRS_TEMP_SKIP                0
+#define BMP280_OSRS_TEMP_1X                  BIT(5)
+#define BMP280_OSRS_TEMP_2X                  BIT(6)
+#define BMP280_OSRS_TEMP_4X                  (BIT(6) | BIT(5))
+#define BMP280_OSRS_TEMP_8X                  BIT(7)
+#define BMP280_OSRS_TEMP_16X                 (BIT(7) | BIT(5))
 
-#define BMP280_OSRS_PRESS_MASK		           (BIT(4) | BIT(3) | BIT(2))
-#define BMP280_OSRS_PRESS_SKIP		           0
-#define BMP280_OSRS_PRESS_1X		             BIT(2)
-#define BMP280_OSRS_PRESS_2X		             BIT(3)
-#define BMP280_OSRS_PRESS_4X		             (BIT(3) | BIT(2))
-#define BMP280_OSRS_PRESS_8X		             BIT(4)
-#define BMP280_OSRS_PRESS_16X		             (BIT(4) | BIT(2))
+#define BMP280_OSRS_PRESS_MASK               (BIT(4) | BIT(3) | BIT(2))
+#define BMP280_OSRS_PRESS_SKIP               0
+#define BMP280_OSRS_PRESS_1X                 BIT(2)
+#define BMP280_OSRS_PRESS_2X                 BIT(3)
+#define BMP280_OSRS_PRESS_4X                 (BIT(3) | BIT(2))
+#define BMP280_OSRS_PRESS_8X                 BIT(4)
+#define BMP280_OSRS_PRESS_16X                (BIT(4) | BIT(2))
 
-#define BMP280_MODE_MASK		                 (BIT(1) | BIT(0))
-#define BMP280_MODE_SLEEP		                 0
-#define BMP280_MODE_FORCED		               BIT(0)
-#define BMP280_MODE_NORMAL		               (BIT(1) | BIT(0))
+#define BMP280_MODE_MASK                     (BIT(1) | BIT(0))
+#define BMP280_MODE_SLEEP                    0
+#define BMP280_MODE_FORCED                   BIT(0)
+#define BMP280_MODE_NORMAL                   (BIT(1) | BIT(0))
 
-#define BMP280_FILTER_MASK		               (BIT(4) | BIT(3) | BIT(2))
-#define BMP280_FILTER_OFF		                 0
-#define BMP280_FILTER_2X		                 BIT(2)
-#define BMP280_FILTER_4X		                 BIT(3)
-#define BMP280_FILTER_8X		                 (BIT(3) | BIT(2))
-#define BMP280_FILTER_16X		                 BIT(4)
+#define BMP280_FILTER_MASK                   (BIT(4) | BIT(3) | BIT(2))
+#define BMP280_FILTER_OFF                    0
+#define BMP280_FILTER_2X                     BIT(2)
+#define BMP280_FILTER_4X                     BIT(3)
+#define BMP280_FILTER_8X                     (BIT(3) | BIT(2))
+#define BMP280_FILTER_16X                    BIT(4)
 
 #define BMP280_STANDBY_TIME_0_5              0
 #define BMP280_STANDBY_TIME_62_5             BIT(5)
@@ -76,8 +75,8 @@
 #define BMP280_STANDBY_TIME_2000             (BIT(7) | BIT(6))
 #define BMP280_STANDBY_TIME_4000             (BIT(7) | BIT(6) | BIT(5))
 
-#define BMP280_CHIP_ID			                 0x58
-#define BMP280_SOFT_RESET_VAL		             0xB6
+#define BMP280_CHIP_ID                       0x58
+#define BMP280_SOFT_RESET_VAL                0xB6
 
 struct bmp280_data {
   struct i2c_client *client;
@@ -219,16 +218,16 @@ static int bmp280_init(struct i2c_client *client)
   ret = i2c_smbus_write_byte_data(client, BMP280_CONFIG_REG,
         BMP280_STANDBY_TIME_500 | BMP280_FILTER_16X);
   if (ret < 0) {
-		dev_err(&client->dev,
-			"Failed to write config register.\n");
+    dev_err(&client->dev,
+      "Failed to write config register.\n");
     return ret;
   }
 
   ret = i2c_smbus_write_byte_data(client, BMP280_CTRL_MEAS_REG, 
         BMP280_OSRS_PRESS_16X | BMP280_OSRS_TEMP_2X | BMP280_MODE_NORMAL);
   if (ret < 0) {
-		dev_err(&client->dev,
-			"Failed to write ctrl_meas register.\n");
+    dev_err(&client->dev,
+      "Failed to write ctrl_meas register.\n");
     return ret;
   }
 
@@ -283,7 +282,7 @@ static int bmp280_probe(struct i2c_client *client,
     return -ENOMEM;
 
   data = iio_priv(indio_dev);
-	mutex_init(&data->lock);
+  mutex_init(&data->lock);
   i2c_set_clientdata(client, indio_dev);
   data->client = client;
 
@@ -306,8 +305,8 @@ static int bmp280_remove(struct i2c_client *client)
 }
 
 static const struct i2c_device_id bmp280_id[] = {
-	{ "bmp280", 0 },
-	{ }
+  { "bmp280", 0 },
+  { }
 };
 MODULE_DEVICE_TABLE(i2c, bmp280_id);
 
@@ -318,7 +317,7 @@ static struct i2c_driver bmp280_driver = {
   },
   .probe = bmp280_probe,
   .remove = bmp280_remove,
-	.id_table	= bmp280_id,
+  .id_table  = bmp280_id,
 };
 module_i2c_driver(bmp280_driver);
 

@@ -168,7 +168,7 @@ drivers/iio/trigger/iio-trig-interrupt.ko
 ## Linux driver for BMP280 sensor ##
 
 Driver for BMP280 sensor is implemented in `bmp280/bmp280.c` file. 
-Implementation is based on I2C and IIO support from Linux kernel. Runt `make` to 
+Implementation is based on I2C and IIO support from Linux kernel. Run `make` to 
 compile the driver source code. 
 
 ```
@@ -181,7 +181,7 @@ Copy `bmp280/bmp280.ko` file to Raspberry Pi.
 ### Testing BMP280 driver ###
 
 I2C devices are not enumerated at the hardware level. For this reason Linux 
-kernel must know device's address before loading a driver.  There are several 
+kernel must know device's address before loading a driver. There are several 
 ways how to achieve this as described in 
 [Documentation/i2c/instantiating-devices](https://github.com/raspberrypi/linux/blob/rpi-4.1.y/Documentation/i2c/instantiating-devices).  
 For the sake of simplicity we are going to configure I2C device and address from 
@@ -195,7 +195,7 @@ root@raspberrypi:~# echo bmp280 0x77 > /sys/bus/i2c/devices/i2c-1/new_device
 ```
 
 Now we are ready to load driver files into kernel space. File `industrialio.ko` 
-is a prerequisite module.
+is a prerequisite for loading `bmp280.ko` driver.
 
 ```
 pi@raspberrypi: sudo insmode industrialio.ko
@@ -259,15 +259,18 @@ pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input
 ## References ##
 
 * I2C
+    * [I2C (Inter-Integrated Circuit) Bus Technical Overview and Frequently 
+      Asked 
+Questions](http://www.esacademy.com/en/library/technical-articles-and-documents/miscellaneous/i2c-bus.html)
     * [Documentation/i2c](https://github.com/raspberrypi/linux/tree/rpi-4.1.y/Documentation/i2c) 
       files in the kernel tree.
-    * Linux Kernel HTML Documentation, [Chapter 11. I2C and SMBus 
+    * [Linux Kernel HTML Documentation, Chapter 11. I2C and SMBus 
       Subsystem](https://www.kernel.org/doc/htmldocs/device-drivers/i2c.html)
     * [Linux Journal, I2C Drivers, Part 
       I](http://www.linuxjournal.com/article/7136)
     * [Linux Journal, I2C Drivers, Part II](http://www.linuxjournal.com/article/7252)
 * Industrial I/O
-    * Linux Kernel HTML Documentation, [Industrial I/O driver developer's 
+    * [Linux Kernel HTML Documentation, Industrial I/O driver developer's 
       guide](https://www.kernel.org/doc/htmldocs/iio/index.html)
     * [Analog Devices, Linux Industrial I/O 
       Subsystem](https://wiki.analog.com/software/linux/docs/iio/iio)
