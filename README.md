@@ -12,7 +12,7 @@ toolchain.
 ## Inspecting BMP280 sensor from Raspberry Pi ##
 
 To assemble BMP280 sensor follow directions from 
-[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/).  
+[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
 The link describes pins on sensor side, while information about pins on 
 Raspberry Pi side can be found 
 [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
@@ -184,31 +184,79 @@ Copy `bmp280/bmp280.ko` file to Raspberry Pi.
 
 ### Testing BMP280 driver ###
 
+I2C devices are not enumerated at the hardware level. For this reason Linux 
+kernel must know device's address before loading a driver.  There are several 
+ways how to achieve this as described in 
+[Documentation/i2c/instantiating-devices](https://github.com/raspberrypi/linux/blob/rpi-4.1.y/Documentation/i2c/instantiating-devices).  
+For the sake of simplicity we are going to configure I2C device and address from 
+user-space. Run following commands to inform Linux kernel that I2C device 
+`bmp280` is at address `0x77` of the bus `1`. 
+
+```
+pi@raspberrypi:~ $ su -
+Password: 
+root@raspberrypi:~# echo bmp280 0x77 > /sys/bus/i2c/devices/i2c-1/new_device
+```
+
+Now we are ready to load driver files into kernel space. File `industrialio.ko` 
+is a prerequisite module.
+
 ```
 pi@raspberrypi: sudo insmode industrialio.ko
 pi@raspberrypi: sudo insmode bmp280.ko
 ```
 
+Run following command to verify that kernel modules are loaded.
+
 ```
-pi@raspberrypi: lsmod
+pi@raspberrypi:~ $ lsmod
 Module                  Size  Used by
-industrialio           39851  0 
+bmp280                  3099  0 
+industrialio           39851  1 bmp280
 cfg80211              399468  0 
 rfkill                 16799  2 cfg80211
 r8712u                168059  0 
+spi_bcm2835             7216  0 
 snd_bcm2835            19739  0 
-bcm2835_gpiomem         3023  0 
 bcm2835_rng             1824  0 
+bcm2835_gpiomem         3023  0 
+i2c_bcm2708             5062  0 
 snd_pcm                75040  1 snd_bcm2835
 snd_timer              19138  1 snd_pcm
-i2c_bcm2708             5062  0 
-spi_bcm2835             7216  0 
 snd                    52636  3 snd_bcm2835,snd_timer,snd_pcm
 uio_pdrv_genirq         2986  0 
 uio                     8228  1 uio_pdrv_genirq
 i2c_dev                 6108  0 
 fuse                   82598  1 
 ipv6                  343556  30 
+```
+
+Following command displays last 10 lines from the kernel ring buffer. 
+
+```
+pi@raspberrypi:~ $ dmesg | tail
+[    8.129458] cfg80211:   (5250000 KHz - 5330000 KHz @ 80000 KHz, 160000 KHz AUTO), (N/A, 2000 mBm), (0 s)
+[    8.129474] cfg80211:   (5490000 KHz - 5730000 KHz @ 160000 KHz), (N/A, 2000 mBm), (0 s)
+[    8.129489] cfg80211:   (5735000 KHz - 5835000 KHz @ 80000 KHz), (N/A, 2000 mBm), (N/A)
+[    8.129504] cfg80211:   (57240000 KHz - 63720000 KHz @ 2160000 KHz), (N/A, 0 mBm), (N/A)
+[    9.197821] smsc95xx 1-1.1:1.0 eth0: hardware isn't capable of remote wakeup
+[    9.198557] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   18.847557] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+[46936.523518] i2c i2c-1: new_device: Instantiated device bmp280 at 0x77
+[46943.215680] bmp280 1-0077: Entering BMP280 probe...
+[46943.216213] bmp280 1-0077: Chip id found: 0x58
+```
+
+String `Chip id found: 0x58` indicates that BMP280 driver was able to connect to 
+actual device and that it found correct chip id value.
+
+Driver exposes pressure and temperature measurements over virtual file system. 
+
+```
+pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_pressure_input 
+98885.019531250
+pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input 
+2303
 ```
 
 
