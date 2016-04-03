@@ -13,22 +13,19 @@ toolchain.
 
 To assemble BMP280 sensor follow directions from 
 [here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
-The link describes pins on sensor side, while information about pins on 
-Raspberry Pi side can be found [here]
-(http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29) 
-I2C interface of the BMP280 sensor should be used. To learn more about I2C check 
-out following 
-[link](http://www.esacademy.com/en/library/technical-articles-and-documents/miscellaneous/i2c-bus.html).
+Sensor provides I2C and SPI interface, but for the purpose of this exercise we 
+will use only I2C. Information about I2C related pins on Raspberry Pi side can 
+be found [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
 
-Install `i2c-tools` on Raspberry Pi. This package contains tools for easy 
-debugging I2C devices from command line.
+Tools from `i2c-tools` package can be used for easy debugging I2C devices from 
+command line. Install `i2c-tools` on Raspberry Pi. 
 
 ```
 pi@raspberrypi: sudo apt-get install i2c-tools
 ```
 
 Run `i2cdetect` tool to scan I2C bus for devices. Following command scans I2C 
-bus 1 and it finds some device at address `0x77`.
+bus `1`. 
 
 ```
 pi@raspberrypi:~ $ i2cdetect -y 1
@@ -43,8 +40,9 @@ pi@raspberrypi:~ $ i2cdetect -y 1
 70: -- -- -- -- -- -- -- 77
 ```
 
-Program `i2cdump` can be used for reading registers of the I2C device at address 
-`0x77`. 
+From results of the `i2cdetect` we can conclude that some device exists at 
+address `0x77`. Program `i2cdump` can be used for reading registers of the I2C 
+device at this address. 
 
 ```
 pi@raspberrypi:~ $ i2cdump -y 1 0x77
@@ -69,8 +67,8 @@ f0: 00 00 00 00 00 00 00 80 00 00 80 00 00 00 00 00    .......?..?.....
 ```
 Value `0x58` at address `0xD0` is interesting. In [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf) 
-is written that register at address `0xD0` contains chip id and that its value 
-is `0x58`. This confirms that device at address `0x77` is indeed BMP280 sensor.
+is written that register at address `0xD0` contains chip id of value `0x58`.  
+This confirms that device at address `0x77` is indeed BMP280 sensor.
 
 It is also visible that device is in sleep mode, because bits `0`, and `1` of 
 register `0xF4` are not set. Execute following commands to put sensor in normal 
@@ -83,8 +81,8 @@ pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF5 0x90
 
 Sensor in normal mode periodically cycles between standby and measurement 
 periods. Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent 
-runs of `i2cdump` shows that values in those registries are changing over time. 
-More information about registries can be found in In [BMP280 
+runs of `i2cdump` shows that values in those registries are changing over time.  
+More information about BMP280 registries can be found in [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf).
 
 
