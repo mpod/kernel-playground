@@ -17,8 +17,10 @@ Sensor provides I2C and SPI interface, but for the purpose of this exercise we
 will use only I2C. Information about I2C related pins on Raspberry Pi side can 
 be found [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
 
-Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
-from command line. Install `i2c-tools` on Raspberry Pi. 
+I2C support in Raspberry Pi isn't enabled by default, so run `raspi-config` and 
+enable it. This is a prerequisite for tools from `i2c-tools` package which can 
+be used for easy debugging of I2C devices from command line. Install `i2c-tools` 
+on Raspberry Pi. 
 
 ```
 pi@raspberrypi: sudo apt-get install i2c-tools
@@ -79,7 +81,7 @@ pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF5 0x90
 
 Sensor in normal mode periodically cycles between standby and measurement 
 periods. Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent 
-runs of `i2cdump` shows that values in those registries are changing over time. 
+runs of `i2cdump` show that values in those registries are changing over time.  
 More information about BMP280 registries can be found in [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf).
 
@@ -129,7 +131,7 @@ $ git checkout 6330c27
 ```
 
 BMP280 driver depends on Industrial I/0 support that it is not enabled by 
-default inside Raspbian OS. So configure kernel first.
+default inside Raspbian OS. Configure kernel using following command.
 
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig

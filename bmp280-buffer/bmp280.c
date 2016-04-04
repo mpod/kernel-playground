@@ -230,6 +230,62 @@ static int bmp280_init(struct i2c_client *client)
   return ret;
 }
 
+static const struct iio_buffer_setup_ops bmp280_buffer_setup_ops = {
+	.postenable = &iio_triggered_buffer_postenable,
+	.predisable = &iio_triggered_buffer_predisable,
+};
+
+static irqreturn_t bmp280_trigger_h(int irq, void *p)
+{
+	struct iio_poll_func *pf = p;
+	struct iio_dev *indio_dev = pf->indio_dev;
+	u32 *buf_data;
+
+  printk(KERN_INFO "bmp280_trigger_h 0x%x 0x%x, 0x%x\n", 
+      (uint32_t)indio_dev->scan_bytes, (uint32_t)(*indio_dev->active_scan_mask),
+      (uint32_t)indio_dev->masklength);
+	buf_data = kmalloc(indio_dev->scan_bytes, GFP_KERNEL);
+	if (!buf_data)
+		goto done;
+
+	if (!bitmap_empty(indio_dev->active_scan_mask, indio_dev->masklength)) {
+    struct bmp280_data *data = iio_priv(indio_dev);
+		int i, j;
+    s32 adc_temp = 0;
+    s32 adc_press = 0;
+    s32 temp, press;
+
+    mutex_lock(&data->lock);
+    bmp280_read_measurements(data->client, &adc_temp, &adc_press);
+    temp = bmp280_compensate_temp(data, adc_temp);
+    press = bmp280_compensate_press(data, adc_press);
+
+		for (i = 0, j = 0;
+		     i < bitmap_weight(indio_dev->active_scan_mask,
+				       indio_dev->masklength);
+		     i++, j++) {
+			j = find_next_bit(indio_dev->active_scan_mask,
+					  indio_dev->masklength, j);
+
+      if (j == temperature_idx) 
+  		  buf_data[i] = temp;
+      else if (j == pressure_idx)
+        buf_data[i] = press;
+		}
+
+    mutex_unlock(&data->lock);
+	}
+
+	iio_push_to_buffers_with_timestamp(indio_dev, buf_data, iio_get_time_ns());
+
+	kfree(buf_data);
+
+done:
+	iio_trigger_notify_done(indio_dev->trig);
+
+	return IRQ_HANDLED;
+}
+
 static const struct iio_chan_spec bmp280_channels[] = {
   {
     .type = IIO_TEMP,
@@ -320,3 +376,4 @@ module_i2c_driver(bmp280_driver);
 MODULE_AUTHOR("Matija Podravec <matija_podravec@fastmail.fm>");
 MODULE_DESCRIPTION("BMP280 preassure and temperature sensor");
 MODULE_LICENSE("GPL");
+
