@@ -12,7 +12,7 @@ toolchain.
 ## Inspecting BMP280 sensor from Raspberry Pi ##
 
 To assemble BMP280 sensor follow directions from 
-[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/).  
+[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
 Sensor provides I2C and SPI interface, but for the purpose of this exercise only 
 I2C is used. Information about I2C related pins on Raspberry Pi side can be 
 found 
@@ -82,7 +82,7 @@ pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF5 0x90
 
 Sensor in normal mode periodically cycles between standby and measurement 
 periods. Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent 
-runs of `i2cdump` show that values in those registries are changing over time.  
+runs of `i2cdump` show that values in those registries are changing over time. 
 More information about BMP280 registries can be found in [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf).
 
@@ -186,7 +186,7 @@ Copy `bmp280/bmp280.ko` file to Raspberry Pi.
 I2C devices are not enumerated at the hardware level. For this reason Linux 
 kernel must know device's address before loading a driver. There are several 
 ways how to achieve this as described in 
-[Documentation/i2c/instantiating-devices](https://github.com/raspberrypi/linux/blob/rpi-4.1.y/Documentation/i2c/instantiating-devices).  
+[Documentation/i2c/instantiating-devices](https://github.com/raspberrypi/linux/blob/rpi-4.1.y/Documentation/i2c/instantiating-devices). 
 For the sake of simplicity we are going to configure I2C device and address from 
 user-space. Run following commands to inform Linux kernel that I2C device 
 `bmp280` is on bus `1` and at address `0x77`.
