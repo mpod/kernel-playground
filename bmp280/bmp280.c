@@ -47,12 +47,12 @@
 #define BMP280_PRESSURE_COMP_START_REG       (0x8E)
 #define BMP280_PRESSURE_COMP_REG_COUNT       18
 
-#define BMP280_OSRS_TEMP_MASK                  (BIT(7) | BIT(6) | BIT(5))
-#define BMP280_OSRS_TEMP_SKIP                 0
-#define BMP280_OSRS_TEMP_1X                   BIT(5)
-#define BMP280_OSRS_TEMP_2X                   BIT(6)
-#define BMP280_OSRS_TEMP_4X                   (BIT(6) | BIT(5))
-#define BMP280_OSRS_TEMP_8X                   BIT(7)
+#define BMP280_OSRS_TEMP_MASK                (BIT(7) | BIT(6) | BIT(5))
+#define BMP280_OSRS_TEMP_SKIP                0
+#define BMP280_OSRS_TEMP_1X                  BIT(5)
+#define BMP280_OSRS_TEMP_2X                  BIT(6)
+#define BMP280_OSRS_TEMP_4X                  (BIT(6) | BIT(5))
+#define BMP280_OSRS_TEMP_8X                  BIT(7)
 #define BMP280_OSRS_TEMP_16X                 (BIT(7) | BIT(5))
 
 #define BMP280_OSRS_PRESS_MASK               (BIT(4) | BIT(3) | BIT(2))
@@ -61,19 +61,19 @@
 #define BMP280_OSRS_PRESS_2X                 BIT(3)
 #define BMP280_OSRS_PRESS_4X                 (BIT(3) | BIT(2))
 #define BMP280_OSRS_PRESS_8X                 BIT(4)
-#define BMP280_OSRS_PRESS_16X                 (BIT(4) | BIT(2))
+#define BMP280_OSRS_PRESS_16X                (BIT(4) | BIT(2))
 
 #define BMP280_MODE_MASK                     (BIT(1) | BIT(0))
-#define BMP280_MODE_SLEEP                     0
+#define BMP280_MODE_SLEEP                    0
 #define BMP280_MODE_FORCED                   BIT(0)
 #define BMP280_MODE_NORMAL                   (BIT(1) | BIT(0))
 
 #define BMP280_FILTER_MASK                   (BIT(4) | BIT(3) | BIT(2))
-#define BMP280_FILTER_OFF                     0
+#define BMP280_FILTER_OFF                    0
 #define BMP280_FILTER_2X                     BIT(2)
 #define BMP280_FILTER_4X                     BIT(3)
 #define BMP280_FILTER_8X                     (BIT(3) | BIT(2))
-#define BMP280_FILTER_16X                     BIT(4)
+#define BMP280_FILTER_16X                    BIT(4)
 
 #define BMP280_STANDBY_TIME_0_5              0
 #define BMP280_STANDBY_TIME_62_5             BIT(5)
@@ -85,7 +85,7 @@
 #define BMP280_STANDBY_TIME_4000             (BIT(7) | BIT(6) | BIT(5))
 
 #define BMP280_CHIP_ID                       0x58
-#define BMP280_SOFT_RESET_VAL                 0xB6
+#define BMP280_SOFT_RESET_VAL                0xB6
 
 struct bmp280_data {
   struct i2c_client *client;
