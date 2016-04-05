@@ -28,7 +28,7 @@ pi@raspberrypi: sudo apt-get install i2c-tools
 ```
 
 Run `i2cdetect` tool to scan I2C bus for devices. Following command scans I2C 
-bus `1`. 
+bus `1`.  
 
 ```
 pi@raspberrypi:~ $ i2cdetect -y 1
