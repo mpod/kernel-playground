@@ -1,5 +1,5 @@
 # kernel-playground #
-This repository describes steps in creating Linux kernel driver for [Adafruit 
+This repository describes steps in creating a Linux kernel driver for [Adafruit 
 BMP I2C or SPI Barometric Pressure & Altitude 
 Sensor](https://www.adafruit.com/products/2651). Driver was tested on [Raspberry 
 Pi](https://www.raspberrypi.org/) with 
@@ -12,15 +12,16 @@ toolchain.
 ## Inspecting BMP280 sensor from Raspberry Pi ##
 
 To assemble BMP280 sensor follow directions from 
-[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
-Sensor provides I2C and SPI interface, but for the purpose of this exercise we 
-will use only I2C. Information about I2C related pins on Raspberry Pi side can 
-be found [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
+[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/).  
+Sensor provides I2C and SPI interface, but for the purpose of this exercise only 
+I2C is used. Information about I2C related pins on Raspberry Pi side can be 
+found 
+[here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
 
-I2C support in Raspberry Pi isn't enabled by default, so run `raspi-config` and 
-enable it. This is a prerequisite for tools from `i2c-tools` package which can 
-be used for easy debugging of I2C devices from command line. Install `i2c-tools` 
-on Raspberry Pi. 
+Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
+from command line. Those tools reguire I2C kernel support to be enabled in 
+Raspberry Pi. So run `sudo raspi-config` and select appropriate options.  After 
+rebooting Raspberry Pi install `i2c-tools` with following command.
 
 ```
 pi@raspberrypi: sudo apt-get install i2c-tools
@@ -44,7 +45,7 @@ pi@raspberrypi:~ $ i2cdetect -y 1
 
 From results of the `i2cdetect` tool we can conclude that some device exists at 
 address `0x77`. Program `i2cdump` can be used for reading registers of the I2C 
-device at this address. 
+device at that address. 
 
 ```
 pi@raspberrypi:~ $ i2cdump -y 1 0x77
@@ -130,8 +131,8 @@ Linux kernel version `4.1.17`. Checkout commit `6330c27`.
 $ git checkout 6330c27
 ```
 
-BMP280 driver depends on Industrial I/0 support that it is not enabled by 
-default inside Raspbian OS. Configure kernel using following command.
+BMP280 driver depends on `Industrial I/0` (or IIO) support that it is not 
+enabled by default in Raspbian OS. Configure kernel using following command.
 
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig
@@ -152,7 +153,7 @@ Device Drivers --->
             <M> SYSFS trigger
 ```
 
-And compile IIO modules.
+And compile `IIO` modules.
 
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- modules
@@ -188,7 +189,7 @@ ways how to achieve this as described in
 [Documentation/i2c/instantiating-devices](https://github.com/raspberrypi/linux/blob/rpi-4.1.y/Documentation/i2c/instantiating-devices).  
 For the sake of simplicity we are going to configure I2C device and address from 
 user-space. Run following commands to inform Linux kernel that I2C device 
-`bmp280` is at address `0x77` of the bus `1`. 
+`bmp280` is on bus `1` and at address `0x77`.
 
 ```
 pi@raspberrypi:~ $ su -
@@ -196,29 +197,32 @@ Password:
 root@raspberrypi:~# echo bmp280 0x77 > /sys/bus/i2c/devices/i2c-1/new_device
 ```
 
-Now we are ready to load driver files into kernel space. File `industrialio.ko` 
-is a prerequisite for loading `bmp280.ko` driver.
+Now we are ready to load driver files into kernel space. Files `industrialio.ko` 
+and `kfifo_buf.ko` are prerequisite modules for loading `bmp280.ko` driver.
 
 ```
 pi@raspberrypi: sudo insmode industrialio.ko
+pi@raspberrypi: sudo insmode kfifo_buf.ko
 pi@raspberrypi: sudo insmode bmp280.ko
 ```
 
 Run following command to verify that kernel modules are loaded.
 
 ```
-pi@raspberrypi:~ $ lsmod
+pi@raspberrypi:~/lkm $ lsmod
 Module                  Size  Used by
-bmp280                  3099  0 
-industrialio           39851  1 bmp280
+bmp280                  3977  0 
+kfifo_buf               2482  1 bmp280
+industrialio           39851  2 bmp280,kfifo_buf
 cfg80211              399468  0 
 rfkill                 16799  2 cfg80211
 r8712u                168059  0 
-spi_bcm2835             7216  0 
-snd_bcm2835            19739  0 
-bcm2835_rng             1824  0 
-bcm2835_gpiomem         3023  0 
 i2c_bcm2708             5062  0 
+bcm2835_gpiomem         3023  0 
+bcm2835_rng             1824  0 
+evdev                  10552  0 
+joydev                  9427  0 
+snd_bcm2835            19739  0 
 snd_pcm                75040  1 snd_bcm2835
 snd_timer              19138  1 snd_pcm
 snd                    52636  3 snd_bcm2835,snd_timer,snd_pcm
@@ -227,36 +231,40 @@ uio                     8228  1 uio_pdrv_genirq
 i2c_dev                 6108  0 
 fuse                   82598  1 
 ipv6                  343556  30 
+
 ```
 
 Following command displays last 10 lines from the kernel ring buffer. 
 
 ```
 pi@raspberrypi:~ $ dmesg | tail
-[    8.129458] cfg80211:   (5250000 KHz - 5330000 KHz @ 80000 KHz, 160000 KHz AUTO), (N/A, 2000 mBm), (0 s)
-[    8.129474] cfg80211:   (5490000 KHz - 5730000 KHz @ 160000 KHz), (N/A, 2000 mBm), (0 s)
-[    8.129489] cfg80211:   (5735000 KHz - 5835000 KHz @ 80000 KHz), (N/A, 2000 mBm), (N/A)
-[    8.129504] cfg80211:   (57240000 KHz - 63720000 KHz @ 2160000 KHz), (N/A, 0 mBm), (N/A)
-[    9.197821] smsc95xx 1-1.1:1.0 eth0: hardware isn't capable of remote wakeup
-[    9.198557] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-[   18.847557] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-[46936.523518] i2c i2c-1: new_device: Instantiated device bmp280 at 0x77
-[46943.215680] bmp280 1-0077: Entering BMP280 probe...
-[46943.216213] bmp280 1-0077: Chip id found: 0x58
+[    8.418592] cfg80211:   (5490000 KHz - 5730000 KHz @ 160000 KHz), (N/A, 2000 mBm), (0 s)
+[    8.418607] cfg80211:   (5735000 KHz - 5835000 KHz @ 80000 KHz), (N/A, 2000 mBm), (N/A)
+[    8.418622] cfg80211:   (57240000 KHz - 63720000 KHz @ 2160000 KHz), (N/A, 0 mBm), (N/A)
+[   10.379810] smsc95xx 1-1.1:1.0 eth0: hardware isn't capable of remote wakeup
+[   10.380311] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   19.188609] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+[  433.650445] i2c i2c-1: new_device: Instantiated device bmp280 at 0x77
+[  451.537025] bmp280 1-0077: Entering BMP280 probe...
+[  451.537562] bmp280 1-0077: Chip id found: 0x58
+[  451.541401] bmp280 1-0077: BMP280 registered.
 ```
 
-String `Chip id found: 0x58` indicates that BMP280 driver was able to connect to 
-actual device and that it found correct chip id value.
+String `BMP280 registered` indicates that BMP280 driver was able to connect to 
+actual device, that it found correct chip id value, and that it loaded module 
+into Linux kernel.
 
 Driver exposes pressure and temperature measurements over virtual file system. 
 
 ```
-pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_pressure_input 
-98885.019531250
-pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input 
-2303
+pi@raspberrypi:~/lkm $ cat /sys/bus/iio/devices/iio\:device0/in_pressure_input 
+99534.601562500
+pi@raspberrypi:~/lkm $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input 
+23.490000000
 ```
 
+These values mean that sensor measured pressure of 99534.601 Pa and temperature 
+of 23.49 degrees Celsius. 
 
 ## References ##
 
