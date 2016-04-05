@@ -11,13 +11,22 @@
  *
  */
 
+#include <linux/kernel.h>
+#include <linux/interrupt.h>
 #include <linux/err.h>
 #include <linux/i2c.h>
 #include <linux/delay.h>
 #include <linux/module.h>
 #include <linux/bitops.h>
+#include <linux/irq.h>
+#include <linux/bitmap.h>
+#include <linux/export.h>
+#include <linux/slab.h>
+
 
 #include <linux/iio/iio.h>
+#include <linux/iio/trigger_consumer.h>
+#include <linux/iio/kfifo_buf.h>
 #include <linux/iio/sysfs.h>
 
 
@@ -38,12 +47,12 @@
 #define BMP280_PRESSURE_COMP_START_REG       (0x8E)
 #define BMP280_PRESSURE_COMP_REG_COUNT       18
 
-#define BMP280_OSRS_TEMP_MASK                (BIT(7) | BIT(6) | BIT(5))
-#define BMP280_OSRS_TEMP_SKIP                0
-#define BMP280_OSRS_TEMP_1X                  BIT(5)
-#define BMP280_OSRS_TEMP_2X                  BIT(6)
-#define BMP280_OSRS_TEMP_4X                  (BIT(6) | BIT(5))
-#define BMP280_OSRS_TEMP_8X                  BIT(7)
+#define BMP280_OSRS_TEMP_MASK                  (BIT(7) | BIT(6) | BIT(5))
+#define BMP280_OSRS_TEMP_SKIP                 0
+#define BMP280_OSRS_TEMP_1X                   BIT(5)
+#define BMP280_OSRS_TEMP_2X                   BIT(6)
+#define BMP280_OSRS_TEMP_4X                   (BIT(6) | BIT(5))
+#define BMP280_OSRS_TEMP_8X                   BIT(7)
 #define BMP280_OSRS_TEMP_16X                 (BIT(7) | BIT(5))
 
 #define BMP280_OSRS_PRESS_MASK               (BIT(4) | BIT(3) | BIT(2))
@@ -52,19 +61,19 @@
 #define BMP280_OSRS_PRESS_2X                 BIT(3)
 #define BMP280_OSRS_PRESS_4X                 (BIT(3) | BIT(2))
 #define BMP280_OSRS_PRESS_8X                 BIT(4)
-#define BMP280_OSRS_PRESS_16X                (BIT(4) | BIT(2))
+#define BMP280_OSRS_PRESS_16X                 (BIT(4) | BIT(2))
 
 #define BMP280_MODE_MASK                     (BIT(1) | BIT(0))
-#define BMP280_MODE_SLEEP                    0
+#define BMP280_MODE_SLEEP                     0
 #define BMP280_MODE_FORCED                   BIT(0)
 #define BMP280_MODE_NORMAL                   (BIT(1) | BIT(0))
 
 #define BMP280_FILTER_MASK                   (BIT(4) | BIT(3) | BIT(2))
-#define BMP280_FILTER_OFF                    0
+#define BMP280_FILTER_OFF                     0
 #define BMP280_FILTER_2X                     BIT(2)
 #define BMP280_FILTER_4X                     BIT(3)
 #define BMP280_FILTER_8X                     (BIT(3) | BIT(2))
-#define BMP280_FILTER_16X                    BIT(4)
+#define BMP280_FILTER_16X                     BIT(4)
 
 #define BMP280_STANDBY_TIME_0_5              0
 #define BMP280_STANDBY_TIME_62_5             BIT(5)
@@ -76,16 +85,20 @@
 #define BMP280_STANDBY_TIME_4000             (BIT(7) | BIT(6) | BIT(5))
 
 #define BMP280_CHIP_ID                       0x58
-#define BMP280_SOFT_RESET_VAL                0xB6
+#define BMP280_SOFT_RESET_VAL                 0xB6
 
 struct bmp280_data {
   struct i2c_client *client;
   struct mutex lock;
+  u16 config;
+  int temperature;
+  int preassure;
   s32 t_fine;
 };
 
 enum { T1, T2, T3 };
 enum { P1, P2, P3, P4, P5, P6, P7, P8, P9 };
+enum { TEMP_SCAN_INDEX, PRESSURE_SCAN_INDEX };
 
 static s32 bmp280_compensate_temp(struct bmp280_data *data, s32 adc_temp)
 {
@@ -182,8 +195,6 @@ static int bmp280_read_raw(struct iio_dev *iio_dev,
   int ret;
   s32 adc_temp = 0;
   s32 adc_press = 0;
-  dev_info(iio_dev->dev.parent, "Entering bmp280_read_raw...");
-  dev_info(iio_dev->dev.parent, "channel: 0x%x, mask: %ld", channel->type, mask);
   mutex_lock(&data->lock);
   bmp280_read_measurements(data->client, &adc_temp, &adc_press);
   if (mask == IIO_CHAN_INFO_RAW && channel->type == IIO_TEMP) {
@@ -230,16 +241,87 @@ static int bmp280_init(struct i2c_client *client)
   return ret;
 }
 
+static const struct iio_buffer_setup_ops bmp280_buffer_setup_ops = {
+  .postenable = &iio_triggered_buffer_postenable,
+  .predisable = &iio_triggered_buffer_predisable,
+};
+
+static irqreturn_t bmp280_trigger_h(int irq, void *p)
+{
+  struct iio_poll_func *pf = p;
+  struct iio_dev *indio_dev = pf->indio_dev;
+  u32 *buf_data;
+
+  buf_data = kmalloc(indio_dev->scan_bytes, GFP_KERNEL);
+  if (!buf_data)
+    goto done;
+
+  if (!bitmap_empty(indio_dev->active_scan_mask, indio_dev->masklength)) {
+    struct bmp280_data *data = iio_priv(indio_dev);
+    int i, j;
+    s32 adc_temp = 0;
+    s32 adc_press = 0;
+    s32 temp, press;
+
+    mutex_lock(&data->lock);
+    bmp280_read_measurements(data->client, &adc_temp, &adc_press);
+    temp = bmp280_compensate_temp(data, adc_temp);
+    press = bmp280_compensate_press(data, adc_press);
+
+    for (i = 0, j = 0;
+         i < bitmap_weight(indio_dev->active_scan_mask, indio_dev->masklength);
+         i++, j++) {
+      j = find_next_bit(indio_dev->active_scan_mask, indio_dev->masklength, j);
+
+      switch(j) {
+        case TEMP_SCAN_INDEX:
+          buf_data[i] = temp;
+          break;
+        case PRESSURE_SCAN_INDEX:
+          buf_data[i] = press;
+          break;
+        default:
+          break;
+      }
+    }
+
+    mutex_unlock(&data->lock);
+  }
+
+  iio_push_to_buffers_with_timestamp(indio_dev, buf_data, iio_get_time_ns());
+  kfree(buf_data);
+
+done:
+  iio_trigger_notify_done(indio_dev->trig);
+
+  return IRQ_HANDLED;
+}
+
 static const struct iio_chan_spec bmp280_channels[] = {
   {
     .type = IIO_TEMP,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
       BIT(IIO_CHAN_INFO_PROCESSED),
+    .scan_index = TEMP_SCAN_INDEX,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 32,
+      .storagebits = 32,
+      .shift = 0,
+    },
   }, {
     .type = IIO_PRESSURE,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | 
       BIT(IIO_CHAN_INFO_PROCESSED),
-  }
+    .scan_index = PRESSURE_SCAN_INDEX,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 32,
+      .storagebits = 32,
+      .shift = 0,
+    },
+  },
+  IIO_CHAN_SOFT_TIMESTAMP(2),
 };
 
 static const struct iio_info bmp280_info = {
@@ -252,30 +334,38 @@ static int bmp280_probe(struct i2c_client *client,
 {
   struct iio_dev *indio_dev;
   struct bmp280_data *data;
+  struct iio_buffer *buffer;
   int ret;
 
   dev_info(&client->dev, "Entering BMP280 probe...\n");
-  if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_WORD_DATA))
-    return -ENODEV;
+  if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_WORD_DATA)) {
+    ret = -ENODEV;
+    goto error_ret;
+  }
 
   ret = i2c_smbus_read_byte_data(client, BMP280_CHIP_ID_REG);
   if (ret < 0) {
-    return ret;
+    ret = -EINVAL;
+    goto error_ret;
   }
   dev_info(&client->dev, "Chip id found: 0x%x\n", ret);
   if (ret != BMP280_CHIP_ID) {
     dev_err(&client->dev, "No BMP280 sensor\n");
-    return -ENODEV;
+    ret = -ENODEV;
+    goto error_ret;
   }
 
   ret = bmp280_init(client);
   if (ret < 0) {
-    return -EINVAL;
+    ret = -EINVAL;
+    goto error_ret;
   }
 
   indio_dev = devm_iio_device_alloc(&client->dev, sizeof(*data));
-  if (!indio_dev)
-    return -ENOMEM;
+  if (!indio_dev) {
+    ret = -ENOMEM;
+    goto error_ret;
+  }
 
   data = iio_priv(indio_dev);
   mutex_init(&data->lock);
@@ -287,17 +377,58 @@ static int bmp280_probe(struct i2c_client *client,
   indio_dev->channels = bmp280_channels;
   indio_dev->num_channels = ARRAY_SIZE(bmp280_channels);
   indio_dev->info = &bmp280_info;
-  indio_dev->modes = INDIO_DIRECT_MODE;
+  indio_dev->modes = INDIO_DIRECT_MODE | INDIO_BUFFER_TRIGGERED;
 
-  return iio_device_register(indio_dev);
+  /* Allocate buffer */
+  buffer = iio_kfifo_allocate();
+  if (!buffer) {
+    ret = -ENOMEM;
+    goto error_free_device;
+  }
+  iio_device_attach_buffer(indio_dev, buffer);
+  buffer->scan_timestamp = true;
+  indio_dev->setup_ops = &bmp280_buffer_setup_ops;
+  indio_dev->pollfunc = iio_alloc_pollfunc(NULL,
+             &bmp280_trigger_h,
+             IRQF_ONESHOT,
+             indio_dev,
+             "bmp280_consumer%d",
+             indio_dev->id);
+  if (!indio_dev->pollfunc) {
+    ret = -ENOMEM;
+    goto error_free_buffer;
+  }
+
+  ret = iio_device_register(indio_dev);
+  if (ret < 0)
+    goto error_unconfigure_buffer;
+
+  dev_info(&client->dev, "BMP280 registered.\n");
+  return 0;
+
+error_unconfigure_buffer:
+  iio_dealloc_pollfunc(indio_dev->pollfunc);
+error_free_buffer:
+  iio_kfifo_free(indio_dev->buffer);
+error_free_device:
+  iio_device_free(indio_dev);
+error_ret:
+  return ret;
 }
 
 static int bmp280_remove(struct i2c_client *client)
 {
   struct iio_dev *indio_dev = i2c_get_clientdata(client);
 
+  dev_info(&client->dev, "Removing driver.\n");
+
+  i2c_smbus_write_byte_data(client, BMP280_CTRL_MEAS_REG, 0);
+  iio_dealloc_pollfunc(indio_dev->pollfunc);
+  iio_kfifo_free(indio_dev->buffer);
   iio_device_unregister(indio_dev);
-  return i2c_smbus_write_byte_data(client, BMP280_CTRL_MEAS_REG, 0);
+  iio_device_free(indio_dev);
+
+  return 0;
 }
 
 static const struct i2c_device_id bmp280_id[] = {
@@ -318,5 +449,5 @@ static struct i2c_driver bmp280_driver = {
 module_i2c_driver(bmp280_driver);
 
 MODULE_AUTHOR("Matija Podravec <matija_podravec@fastmail.fm>");
-MODULE_DESCRIPTION("BMP280 preassure and temperature sensor");
+MODULE_DESCRIPTION("BMP280 pressure and temperature sensor");
 MODULE_LICENSE("GPL");
