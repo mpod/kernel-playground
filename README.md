@@ -16,8 +16,7 @@ To assemble BMP280 sensor follow directions from
 Sensor provides I2C and SPI interface, but for the purpose of this exercise only 
 I2C is used. Information about I2C related pins on Raspberry Pi side can be 
 found 
-[here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).  
-
+[here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29). 
 Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
 from command line. Those tools reguire I2C kernel support to be enabled in 
 Raspberry Pi. So run `sudo raspi-config` and select appropriate options.  After 
@@ -252,9 +251,8 @@ pi@raspberrypi:~ $ dmesg | tail
 
 String `BMP280 registered` indicates that BMP280 driver was able to connect to 
 actual device, that it found correct chip id value, and that it loaded module 
-into Linux kernel.
-
-Driver exposes pressure and temperature measurements over virtual file system. 
+into Linux kernel. Driver exposes pressure and temperature measurements over 
+virtual file system. 
 
 ```
 pi@raspberrypi:~/lkm $ cat /sys/bus/iio/devices/iio\:device0/in_pressure_input 
