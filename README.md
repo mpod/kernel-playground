@@ -264,6 +264,33 @@ pi@raspberrypi:~/lkm $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input
 These values mean that sensor measured pressure of 99534.601 Pa and temperature 
 of 23.49 degrees Celsius. 
 
+### Buffers and triggers in BMP280 driver ###
+
+Driver supports buffers and IIO triggers. Here is example session. 
+
+```bash
+pi@raspberrypi: $ sudo insmod iio-trig-sysfs.ko
+pi@raspberrypi: $ su -
+password:
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/iio_sysfs_trigger/add_trigger 
+root@raspberrypi:~# cat /sys/bus/iio/devices/trigger0/name
+sysfstrig1
+root@raspberrypi:~# echo sysfstrig1 > /sys/bus/iio/devices/iio:device0/trigger/current_trigger
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/iio:device0/scan_elements/in_pressure_en
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/iio:device0/scan_elements/in_temp_en
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/iio:device0/buffer/enable
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
+root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
+```
+
+```
+pi@raspberrypi: $ sudo hexdump /dev/iio\:device0
+0000000 08f7 0000 523a 0184 a18a 27d8 df64 1442
+0000010 08f7 0000 52b9 0184 91d8 63b3 df64 1442
+0000020 08f7 0000 530e 0184 3c82 a1ab df64 1442
+```
+
 ## References ##
 
 * I2C
