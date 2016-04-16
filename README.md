@@ -208,7 +208,7 @@ pi@raspberrypi: sudo insmode bmp280.ko
 Run following command to verify that kernel modules are loaded.
 
 ```
-pi@raspberrypi:~/lkm $ lsmod
+pi@raspberrypi:~ $ lsmod
 Module                  Size  Used by
 bmp280                  3977  0 
 kfifo_buf               2482  1 bmp280
