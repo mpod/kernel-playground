@@ -7,7 +7,7 @@ Pi](https://www.raspberrypi.org/) with
 Development was done on desktop computer using 
 [arm-none-eabi-gcc](https://launchpad.net/gcc-arm-embedded/) cross compiler 
 toolchain. I would appreciate every suggestion how to make this repository 
-simpler and easier to understand.
+easier to understand.
 
 ## Inspecting BMP280 sensor from Raspberry Pi ##
 
@@ -19,7 +19,7 @@ found
 [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29). 
 Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
 from command line. Those tools reguire I2C kernel support to be enabled in 
-Raspberry Pi. So run `sudo raspi-config` and select appropriate options.  After 
+Raspberry Pi. So run `sudo raspi-config` and select appropriate options. After 
 rebooting Raspberry Pi install `i2c-tools` with following command.
 
 ```
@@ -27,7 +27,7 @@ pi@raspberrypi: sudo apt-get install i2c-tools
 ```
 
 Run `i2cdetect` tool to scan I2C bus for devices. Following command scans I2C 
-bus `1`.  
+bus `1`. 
 
 ```
 pi@raspberrypi:~ $ i2cdetect -y 1
