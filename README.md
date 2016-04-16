@@ -130,8 +130,9 @@ Linux kernel version `4.1.17`. Checkout commit `6330c27`.
 $ git checkout 6330c27
 ```
 
-BMP280 driver depends on `Industrial I/0` (or IIO) support that it is not 
-enabled by default in Raspbian OS. Configure kernel using following command.
+BMP280 driver depends on `Industrial I/0` (or `IIO`) support that it is not 
+included by default in Raspbian OS. For that reason it is needed to build `IIO` 
+modules from kernel source code. First configure kernel using following command.
 
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig
@@ -326,7 +327,7 @@ root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
 root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
 ```
 
-Every event triggers driver to write 8 bytes of data in `/dev/iio:device0` file. 
+Every event triggers driver to write 8 bytes of data to `/dev/iio:device0` file.  
 Inspect data with `hexdump` program.
 
 ```
