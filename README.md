@@ -19,7 +19,7 @@ found
 [here](http://elinux.org/RPi_Low-level_peripherals#General_Purpose_Input.2FOutput_.28GPIO.29).
 
 ![BMP280 
-Wiring](https://raw.githubusercontent.com/mpod/mpod.github.io/master/img/bmp280.jpg))
+Wiring](https://raw.githubusercontent.com/mpod/mpod.github.io/master/img/bmp280.jpg)
  
 Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
 from command line. Those tools reguire I2C kernel support to be enabled in 
