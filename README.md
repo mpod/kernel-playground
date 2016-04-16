@@ -331,7 +331,7 @@ root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
 root@raspberrypi:~# echo 1 > /sys/bus/iio/devices/trigger0/trigger_now
 ```
 
-Every event triggers driver to write 8 bytes of data to `/dev/iio:device0` file.  
+Every event triggers driver to write 8 bytes of data to `/dev/iio:device0` file. 
 Inspect data with `hexdump` program.
 
 ```
