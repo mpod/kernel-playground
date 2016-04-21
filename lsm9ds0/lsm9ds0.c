@@ -31,7 +31,7 @@
 #include <linux/iio/trigger_consumer.h>
 #include <linux/iio/kfifo_buf.h>
 
-#define LSM9DS0_WHO_AM_I_G_REG          (0x0F)
+#define LSM9DS0_WHO_AM_I_REG            (0x0F)
 #define LSM9DS0_CTRL_REG1_G_REG         (0x20)
 #define LSM9DS0_CTRL_REG2_G_REG         (0x21)
 #define LSM9DS0_CTRL_REG3_G_REG         (0x22)
@@ -57,41 +57,49 @@
 #define LSM9DS0_INT1_TSH_ZL_G_REG       (0x37)
 #define LSM9DS0_INT1_DURATION_G_REG     (0x38)
 
-#define LSM9DS0_GYRO_ODR_AVL_95HZ_VAL   0x00
-#define LSM9DS0_GYRO_ODR_AVL_190HZ_VAL  0x01
-#define LSM9DS0_GYRO_ODR_AVL_380HZ_VAL  0x02
-#define LSM9DS0_GYRO_ODR_AVL_760HZ_VAL  0x03
+#define LSM9DS0_GYRO_ODR_AVL_95HZ_VAL    0x00
+#define LSM9DS0_GYRO_ODR_AVL_190HZ_VAL   0x01
+#define LSM9DS0_GYRO_ODR_AVL_380HZ_VAL   0x02
+#define LSM9DS0_GYRO_ODR_AVL_760HZ_VAL   0x03
 
-#define LSM9DS0_WHO_AM_I_G              0xD4
+#define LSM9DS0_GYRO_FS_245DPS_VAL       0x00
+#define LSM9DS0_GYRO_FS_500DPS_VAL       0x01
+#define LSM9DS0_GYRO_FS_2000DPS_VAL      0x10
+#define LSM9DS0_GYRO_FS_2000DPS_VAL      0x11
 
-struct lsm9ds0_gyro_data {
-  struct i2c_client *client;
-  struct mutex lock;
-};
+#define LSM9DS0_GYRO_ID                  0xD4
+#define LSM9DS0_ACCEL_MAGN_ID            0x49
 
 enum { SCAN_INDEX_X, SCAN_INDEX_Y, SCAN_INDEX_Z };
+enum { GYRO, ACCEL_MAGN };
+
+struct lsm9ds0_data {
+  struct i2c_client *client;
+  struct mutex lock;
+  int sensor_type;
+};
 
 struct sensor_odr_avl {
   unsigned int hz;
   u8 value;
 };
 
-static const struct sensor_odr_avl lsm9ds0_gyro_odr_avl[4] = {
+static const struct sensor_odr_avl lsm9ds0_odr_avl[4] = {
   {95, LSM9DS0_GYRO_ODR_AVL_95HZ_VAL},
   {190, LSM9DS0_GYRO_ODR_AVL_190HZ_VAL},
   {380, LSM9DS0_GYRO_ODR_AVL_380HZ_VAL},
   {760, LSM9DS0_GYRO_ODR_AVL_760HZ_VAL},
 };
 
-static ssize_t lsm9ds0_gyro_show_samp_freq_avail(struct device *dev,
+static ssize_t lsm9ds0_show_samp_freq_avail(struct device *dev,
         struct device_attribute *attr, char *buf)
 {
   size_t len = 0;
-  int n = ARRAY_SIZE(lsm9ds0_gyro_odr_avl);
+  int n = ARRAY_SIZE(lsm9ds0_odr_avl);
 
   while (n-- > 0)
     len += scnprintf(buf + len, PAGE_SIZE - len,
-      "%d ", lsm9ds0_gyro_odr_avl[n].hz);
+      "%d ", lsm9ds0_odr_avl[n].hz);
 
   /* replace trailing space by newline */
   buf[len - 1] = '\n';
@@ -99,25 +107,25 @@ static ssize_t lsm9ds0_gyro_show_samp_freq_avail(struct device *dev,
   return len;
 }
 
-static IIO_DEV_ATTR_SAMP_FREQ_AVAIL(lsm9ds0_gyro_show_samp_freq_avail);
+static IIO_DEV_ATTR_SAMP_FREQ_AVAIL(lsm9ds0_show_samp_freq_avail);
 
-static struct attribute *lsm9ds0_gyro_attributes[] = {
+static struct attribute *lsm9ds0_attributes[] = {
   &iio_dev_attr_sampling_frequency_available.dev_attr.attr,
   //&iio_dev_attr_in_accel_scale_available.dev_attr.attr,
   NULL
 };
 
-static const struct attribute_group lsm9ds0_gyro_group = {
-  .attrs = lsm9ds0_gyro_attributes,
+static const struct attribute_group lsm9ds0_group = {
+  .attrs = lsm9ds0_attributes,
 };
 
 
-static const struct iio_buffer_setup_ops lsm9ds0_gyro_buffer_setup_ops = {
+static const struct iio_buffer_setup_ops lsm9ds0_buffer_setup_ops = {
   .postenable = &iio_triggered_buffer_postenable,
   .predisable = &iio_triggered_buffer_predisable,
 };
 
-static irqreturn_t lsm9ds0_gyro_trigger_h(int irq, void *p)
+static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
 {
   struct iio_poll_func *pf = p;
   struct iio_dev *indio_dev = pf->indio_dev;
@@ -128,7 +136,7 @@ static irqreturn_t lsm9ds0_gyro_trigger_h(int irq, void *p)
     goto done;
 
   if (!bitmap_empty(indio_dev->active_scan_mask, indio_dev->masklength)) {
-    struct lsm9ds0_gyro_data *data = iio_priv(indio_dev);
+    struct lsm9ds0_data *data = iio_priv(indio_dev);
 
     mutex_lock(&data->lock);
 
@@ -191,7 +199,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   IIO_CHAN_SOFT_TIMESTAMP(3),
 };
 
-static int lsm9ds0_gyro_read_raw(struct iio_dev *iio_dev,
+static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       struct iio_chan_spec const *channel, 
       int *val, int *val2, long mask)
 {
@@ -199,23 +207,35 @@ static int lsm9ds0_gyro_read_raw(struct iio_dev *iio_dev,
 }
 
 
-static const struct iio_info lsm9ds0_gyro_info = {
-	.attrs = &lsm9ds0_gyro_group,
-  .read_raw = lsm9ds0_gyro_read_raw,
+static const struct iio_info lsm9ds0_info = {
+	.attrs = &lsm9ds0_group,
+  .read_raw = lsm9ds0_read_raw,
   .driver_module = THIS_MODULE,
 };
 
 static int lsm9ds0_gyro_init(struct i2c_client *client)
 {
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_G_REG, 0x0F);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register.\n");
+    return ret;
+  }
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG4_G_REG, 
+      LSM9DS0_GYRO_FS_245DPS_VAL);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register.\n");
+    return ret;
+  }
   return 0;
 }
 
-static int lsm9ds0_gyro_probe(struct i2c_client *client,
+static int lsm9ds0_probe(struct i2c_client *client,
     const struct i2c_device_id *id)
 {
   struct iio_dev *indio_dev;
-  struct lsm9ds0_gyro_data *data;
+  struct lsm9ds0_data *data;
   struct iio_buffer *buffer;
+  int sensor_type;
   int ret;
 
   
@@ -225,97 +245,84 @@ static int lsm9ds0_gyro_probe(struct i2c_client *client,
     goto error_ret;
   }
 
-  ret = i2c_smbus_read_byte_data(client, LSM9DS0_WHO_AM_I_G_REG);
+  ret = i2c_smbus_read_byte_data(client, LSM9DS0_WHO_AM_I_REG);
   if (ret < 0) {
     ret = -EINVAL;
     goto error_ret;
   }
   dev_info(&client->dev, "Chip id found: 0x%x\n", ret);
-  if (ret != LSM9DS0_WHO_AM_I_G) {
-    dev_err(&client->dev, "No LSM9DS0 sensor\n");
+  if (ret == LSM9DS0_GYRO_ID) {
+    dev_info(&client->dev, "Gyroscope found.\n", ret);
+    sensor_type = GYRO;
+  } else if (ret == LSM9DS0_ACCEL_MAGN_ID) {
+    dev_info(&client->dev, "Accelerometer and magnetometer found.\n", ret);
+    sensor_type = ACCEL_MAGN;
+  } else {
+    dev_err(&client->dev, "No LSM9DS0 sensor found.\n");
     ret = -ENODEV;
     goto error_ret;
   }
-
-  // LSM9DS0 init
-  lsm9ds0_gyro_init(client);
 
   indio_dev = devm_iio_device_alloc(&client->dev, sizeof(*data));
   if (!indio_dev) {
     ret = -ENOMEM;
     goto error_ret;
   }
+  
+  // LSM9DS0 init
+  lsm9ds0_init(client);
 
   data = iio_priv(indio_dev);
   mutex_init(&data->lock);
   i2c_set_clientdata(client, indio_dev);
   data->client = client;
+  date->sensor_type = sensor_type;
 
   indio_dev->dev.parent = &client->dev;
   indio_dev->name = dev_name(&client->dev);
-  indio_dev->channels = lsm9ds0_gyro_channels;
-  indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_gyro_channels);
-  indio_dev->info = &lsm9ds0_gyro_info;
+  indio_dev->info = &lsm9ds0_info;
   indio_dev->modes = INDIO_DIRECT_MODE | INDIO_BUFFER_TRIGGERED;
 
-  /* Allocate buffer */
-  buffer = iio_kfifo_allocate();
-  if (!buffer) {
-    ret = -ENOMEM;
-    goto error_free_device;
-  }
-  iio_device_attach_buffer(indio_dev, buffer);
-  buffer->scan_timestamp = true;
-  indio_dev->setup_ops = &lsm9ds0_gyro_buffer_setup_ops;
-  indio_dev->pollfunc = iio_alloc_pollfunc(NULL,
-             &lsm9ds0_gyro_trigger_h,
-             IRQF_ONESHOT,
-             indio_dev,
-             "lsm9ds0_gyro_consumer%d",
-             indio_dev->id);
-  if (!indio_dev->pollfunc) {
-    ret = -ENOMEM;
-    goto error_free_buffer;
+  if (sensor_type == GYRO) {
+    lsm9ds0_gyro_init(client);
+    indio_dev->channels = lsm9ds0_gyro_channels;
+    indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_gyro_channels);
   }
 
   ret = iio_device_register(indio_dev);
   if (ret < 0)
-    goto error_unconfigure_buffer;
+    goto error_free_device;
 
   dev_info(&client->dev, "LSM9DS0 registered.\n");
   return 0;
 
-error_unconfigure_buffer:
-  iio_dealloc_pollfunc(indio_dev->pollfunc);
-error_free_buffer:
-  iio_kfifo_free(indio_dev->buffer);
 error_free_device:
   iio_device_free(indio_dev);
 error_ret:
   return ret;
 }
 
-static int lsm9ds0_gyro_remove(struct i2c_client *client)
+static int lsm9ds0_remove(struct i2c_client *client)
 {
   return 0;
 }
 
-static const struct i2c_device_id lsm9ds0_gyro_id[] = {
+static const struct i2c_device_id lsm9ds0_id[] = {
   { "lsm9ds0_gyro", 0 },
   { }
 };
-MODULE_DEVICE_TABLE(i2c, lsm9ds0_gyro_id);
+MODULE_DEVICE_TABLE(i2c, lsm9ds0_id);
 
-static struct i2c_driver lsm9ds0_gyro_driver = {
+static struct i2c_driver lsm9ds0_driver = {
   .driver = {
     .name = "lsm9ds0_gyro",
     .owner = THIS_MODULE,
   },
-  .probe = lsm9ds0_gyro_probe,
-  .remove = lsm9ds0_gyro_remove,
-  .id_table = lsm9ds0_gyro_id,
+  .probe = lsm9ds0_probe,
+  .remove = lsm9ds0_remove,
+  .id_table = lsm9ds0_id,
 };
-module_i2c_driver(lsm9ds0_gyro_driver);
+module_i2c_driver(lsm9ds0_driver);
 
 MODULE_AUTHOR("Matija Podravec <matija_podravec@fastmail.fm>");
 MODULE_DESCRIPTION("LSM9DS0 gyroscope sensor");
