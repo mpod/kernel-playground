@@ -204,6 +204,10 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   IIO_CHAN_SOFT_TIMESTAMP(3),
 };
 
+static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
+  IIO_CHAN_SOFT_TIMESTAMP(0),
+};
+
 static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       struct iio_chan_spec const *channel, 
       int *val, int *val2, long mask)
@@ -220,7 +224,8 @@ static const struct iio_info lsm9ds0_info = {
 
 static int lsm9ds0_gyro_init(struct i2c_client *client)
 {
-  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_G_REG, 0x0F);
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_G_REG, 
+      LSM9DS0_GYRO_POWER_DOWN | LSM9DS0_GYRO_X_EN | LSM9DS0_GYRO_Y_EN | LSM9DS0_GYRO_Z_EN);
   if (ret < 0) {
     dev_err(&client->dev, "Failed to write control register.\n");
     return ret;
@@ -233,6 +238,11 @@ static int lsm9ds0_gyro_init(struct i2c_client *client)
   }
   return 0;
 }
+
+static int lsm9ds0_accel_magn_init(struct i2c_client *client)
+{
+  return 0;
+} 
 
 static int lsm9ds0_probe(struct i2c_client *client,
     const struct i2c_device_id *id)
@@ -274,9 +284,6 @@ static int lsm9ds0_probe(struct i2c_client *client,
     goto error_ret;
   }
   
-  // LSM9DS0 init
-  lsm9ds0_init(client);
-
   data = iio_priv(indio_dev);
   mutex_init(&data->lock);
   i2c_set_clientdata(client, indio_dev);
@@ -289,10 +296,17 @@ static int lsm9ds0_probe(struct i2c_client *client,
   indio_dev->modes = INDIO_DIRECT_MODE | INDIO_BUFFER_TRIGGERED;
 
   if (sensor_type == GYRO) {
-    lsm9ds0_gyro_init(client);
+    ret = lsm9ds0_gyro_init(client);
     indio_dev->channels = lsm9ds0_gyro_channels;
     indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_gyro_channels);
+  } else {
+    ret = lsm9ds0_accel_magn_init(client);
+    indio_dev->channels = lsm9ds0_accel_magn_channels;
+    indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_accel_magn_channels);
   }
+
+  if (ret < 0)
+    goto error_free_device;
 
   ret = iio_device_register(indio_dev);
   if (ret < 0)
