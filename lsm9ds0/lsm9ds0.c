@@ -67,6 +67,11 @@
 #define LSM9DS0_GYRO_FS_2000DPS_VAL      0x10
 #define LSM9DS0_GYRO_FS_2000DPS_VAL      0x11
 
+#define LSM9DS0_GYRO_X_EN                BIT(1) 
+#define LSM9DS0_GYRO_Y_EN                BIT(0) 
+#define LSM9DS0_GYRO_Z_EN                BIT(2) 
+#define LSM9DS0_GYRO_POWER_DOWN          BIT(3) 
+
 #define LSM9DS0_GYRO_ID                  0xD4
 #define LSM9DS0_ACCEL_MAGN_ID            0x49
 
