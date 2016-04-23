@@ -212,7 +212,36 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       struct iio_chan_spec const *channel, 
       int *val, int *val2, long mask)
 {
-  return IIO_VAL_INT;
+  int err;
+  switch(mask) {
+  case IIO_CHAN_INFO_RAW:
+    switch(chan->type) {
+    case IIO_ANGL_VEL:
+      break;
+    case IIO_ACCEL:
+      break;
+    case IIO_MAGN:
+      break; 
+    }
+    break;
+  case IIO_CHAN_SCALE:
+    switch(chan->type) {
+    case IIO_ANGL_VEL:
+      break;
+    case IIO_ACCEL:
+      break;
+    case IIO_MAGN:
+      break; 
+    }
+    break;
+  case IIO_CHAN_INFO_SAMP_FREQ:
+    return IIO_VAL_INT;
+  default:
+    return -EINVAL;
+  }
+
+read_error:
+  return err;
 }
 
 
@@ -293,7 +322,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
   indio_dev->dev.parent = &client->dev;
   indio_dev->name = dev_name(&client->dev);
   indio_dev->info = &lsm9ds0_info;
-  indio_dev->modes = INDIO_DIRECT_MODE | INDIO_BUFFER_TRIGGERED;
+  indio_dev->modes = INDIO_DIRECT_MODE;
 
   if (sensor_type == GYRO) {
     ret = lsm9ds0_gyro_init(client);
