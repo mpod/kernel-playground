@@ -1,4 +1,4 @@
-obj-m+=lsm9ds0-gyro.o
+obj-m+=lsm9ds0.o
 export ARCH:=arm
 export CROSS_COMPILE:=arm-none-eabi-
 

@@ -65,7 +65,6 @@
 #define LSM9DS0_GYRO_FS_245DPS_VAL       0x00
 #define LSM9DS0_GYRO_FS_500DPS_VAL       0x01
 #define LSM9DS0_GYRO_FS_2000DPS_VAL      0x10
-#define LSM9DS0_GYRO_FS_2000DPS_VAL      0x11
 
 #define LSM9DS0_GYRO_X_EN                BIT(1) 
 #define LSM9DS0_GYRO_Y_EN                BIT(0) 
@@ -210,26 +209,58 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
 
 static int lsmd9s0_gyro_read_measurements(struct i2c_client *client, s16 *x, s16 *y, s16 *z)
 {
+  u8 buf[6] = {0};
+
+  buf[0] = 0x80 | LSM9DS0_OUT_X_L_G_REG;
+  ret = i2c_master_send(client, buf, 1);
+  if (ret < 0)
+    return ret;
+
+  ret = i2c_master_recv(client, buf, 6);
+  if (ret < 0)
+    return ret;
+
+  *x = (buf[1] << 8) | bu[0];
+  *y = (buf[3] << 8) | bu[2];
+  *z = (buf[5] << 8) | bu[4];
+  return ret;
 }
 
 static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       struct iio_chan_spec const *channel, 
       int *val, int *val2, long mask)
 {
+  struct lsm9ds0_data *data = iio_priv(iio_dev);
   int err;
-  switch(mask) {
+  s16 x, y, z;
+
+  switch (mask) {
   case IIO_CHAN_INFO_RAW:
-    switch(chan->type) {
+    switch (chan->type) {
     case IIO_ANGL_VEL:
+      err = lsm9ds0_gyro_read_measurement(data->client, &x, &y, &z);
       break;
     case IIO_ACCEL:
       break;
     case IIO_MAGN:
       break; 
     }
-    break;
+    if (err < 0)
+      goto read_error;
+    switch (chan->channel2) {
+    case IIO_MOD_X:
+      *val = x;
+      break;
+    case IIO_MOD_Y:
+      *val = y;
+      break;
+    case IIO_MOD_Z:
+      *val = z;
+      break;
+    }
+    return IIO_VAL_INT;
   case IIO_CHAN_SCALE:
-    switch(chan->type) {
+    switch (chan->type) {
     case IIO_ANGL_VEL:
       break;
     case IIO_ACCEL:
