@@ -129,7 +129,7 @@ static const struct iio_buffer_setup_ops lsm9ds0_buffer_setup_ops = {
   .predisable = &iio_triggered_buffer_predisable,
 };
 
-static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
+/*static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
 {
   struct iio_poll_func *pf = p;
   struct iio_dev *indio_dev = pf->indio_dev;
@@ -154,7 +154,7 @@ done:
   iio_trigger_notify_done(indio_dev->trig);
 
   return IRQ_HANDLED;
-}
+}*/
 
 static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   {
@@ -207,8 +207,9 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   IIO_CHAN_SOFT_TIMESTAMP(0),
 };
 
-static int lsmd9s0_gyro_read_measurements(struct i2c_client *client, s16 *x, s16 *y, s16 *z)
+static int lsm9ds0_gyro_read_measurements(struct i2c_client *client, s16 *x, s16 *y, s16 *z)
 {
+  int ret;
   u8 buf[6] = {0};
 
   buf[0] = 0x80 | LSM9DS0_OUT_X_L_G_REG;
@@ -220,9 +221,9 @@ static int lsmd9s0_gyro_read_measurements(struct i2c_client *client, s16 *x, s16
   if (ret < 0)
     return ret;
 
-  *x = (buf[1] << 8) | bu[0];
-  *y = (buf[3] << 8) | bu[2];
-  *z = (buf[5] << 8) | bu[4];
+  *x = (buf[1] << 8) | buf[0];
+  *y = (buf[3] << 8) | buf[2];
+  *z = (buf[5] << 8) | buf[4];
   return ret;
 }
 
@@ -231,23 +232,28 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       int *val, int *val2, long mask)
 {
   struct lsm9ds0_data *data = iio_priv(iio_dev);
-  int err;
-  s16 x, y, z;
+  int err = 0;
+  s16 x = 0, y = 0, z = 0;
 
   switch (mask) {
   case IIO_CHAN_INFO_RAW:
-    switch (chan->type) {
+    switch (channel->type) {
     case IIO_ANGL_VEL:
-      err = lsm9ds0_gyro_read_measurement(data->client, &x, &y, &z);
+      err = lsm9ds0_gyro_read_measurements(data->client, &x, &y, &z);
       break;
     case IIO_ACCEL:
+      x = y = z = 0;
       break;
     case IIO_MAGN:
+      x = y = z = 0;
       break; 
+    default:
+      return -EINVAL;
+      break;
     }
     if (err < 0)
       goto read_error;
-    switch (chan->channel2) {
+    switch (channel->channel2) {
     case IIO_MOD_X:
       *val = x;
       break;
@@ -259,18 +265,12 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       break;
     }
     return IIO_VAL_INT;
-  case IIO_CHAN_SCALE:
-    switch (chan->type) {
-    case IIO_ANGL_VEL:
-      break;
-    case IIO_ACCEL:
-      break;
-    case IIO_MAGN:
-      break; 
-    }
+  case IIO_CHAN_INFO_SCALE:
+    return IIO_VAL_INT;
     break;
   case IIO_CHAN_INFO_SAMP_FREQ:
     return IIO_VAL_INT;
+    break;
   default:
     return -EINVAL;
   }
@@ -288,6 +288,8 @@ static const struct iio_info lsm9ds0_info = {
 
 static int lsm9ds0_gyro_init(struct i2c_client *client)
 {
+  int ret;
+
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_G_REG, 
       LSM9DS0_GYRO_POWER_DOWN | LSM9DS0_GYRO_X_EN | LSM9DS0_GYRO_Y_EN | LSM9DS0_GYRO_Z_EN);
   if (ret < 0) {
@@ -313,7 +315,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
 {
   struct iio_dev *indio_dev;
   struct lsm9ds0_data *data;
-  struct iio_buffer *buffer;
+  //struct iio_buffer *buffer;
   int sensor_type;
   int ret;
 
@@ -331,10 +333,10 @@ static int lsm9ds0_probe(struct i2c_client *client,
   }
   dev_info(&client->dev, "Chip id found: 0x%x\n", ret);
   if (ret == LSM9DS0_GYRO_ID) {
-    dev_info(&client->dev, "Gyroscope found.\n", ret);
+    dev_info(&client->dev, "Gyroscope found.\n");
     sensor_type = GYRO;
   } else if (ret == LSM9DS0_ACCEL_MAGN_ID) {
-    dev_info(&client->dev, "Accelerometer and magnetometer found.\n", ret);
+    dev_info(&client->dev, "Accelerometer and magnetometer found.\n");
     sensor_type = ACCEL_MAGN;
   } else {
     dev_err(&client->dev, "No LSM9DS0 sensor found.\n");
@@ -352,7 +354,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
   mutex_init(&data->lock);
   i2c_set_clientdata(client, indio_dev);
   data->client = client;
-  date->sensor_type = sensor_type;
+  data->sensor_type = sensor_type;
 
   indio_dev->dev.parent = &client->dev;
   indio_dev->name = dev_name(&client->dev);
