@@ -112,10 +112,28 @@
 #define LSM9DS0_ACT_THS_REG             (0x3E)
 #define LSM9DS0_ACT_DUR_REG             (0x3F)
 
-#define LSM9DS0_GYRO_ODR_AVL_95HZ_VAL    0x00
-#define LSM9DS0_GYRO_ODR_AVL_190HZ_VAL   0x01
-#define LSM9DS0_GYRO_ODR_AVL_380HZ_VAL   0x02
-#define LSM9DS0_GYRO_ODR_AVL_760HZ_VAL   0x03
+#define LSM9DS0_GYRO_ODR_95HZ_VAL        0x00
+#define LSM9DS0_GYRO_ODR_190HZ_VAL       0x01
+#define LSM9DS0_GYRO_ODR_380HZ_VAL       0x02
+#define LSM9DS0_GYRO_ODR_760HZ_VAL       0x03
+
+#define LSM9DS0_ACCEL_ODR_3_125HZ_VAL    0x01
+#define LSM9DS0_ACCEL_ODR_6_5HZ_VAL      0x02
+#define LSM9DS0_ACCEL_ODR_12_5HZ_VAL     0x03
+#define LSM9DS0_ACCEL_ODR_25HZ_VAL       0x04
+#define LSM9DS0_ACCEL_ODR_50HZ_VAL       0x05
+#define LSM9DS0_ACCEL_ODR_100HZ_VAL      0x06
+#define LSM9DS0_ACCEL_ODR_200HZ_VAL      0x07
+#define LSM9DS0_ACCEL_ODR_400HZ_VAL      0x08
+#define LSM9DS0_ACCEL_ODR_800HZ_VAL      0x09
+#define LSM9DS0_ACCEL_ODR_1600HZ_VAL     0x0A
+
+#define LSM9DS0_MAGN_ODR_3_125HZ_VAL     0x01
+#define LSM9DS0_MAGN_ODR_6_5HZ_VAL       0x02
+#define LSM9DS0_MAGN_ODR_12_5HZ_VAL      0x03
+#define LSM9DS0_MAGN_ODR_25HZ_VAL        0x04
+#define LSM9DS0_MAGN_ODR_50HZ_VAL        0x05
+#define LSM9DS0_MAGN_ODR_100HZ_VAL       0x06
 
 #define LSM9DS0_GYRO_FS_245DPS_VAL       0x00
 #define LSM9DS0_GYRO_FS_500DPS_VAL       0x01
@@ -125,11 +143,18 @@
 #define LSM9DS0_GYRO_Y_EN                BIT(0) 
 #define LSM9DS0_GYRO_Z_EN                BIT(2) 
 #define LSM9DS0_GYRO_POWER_DOWN          BIT(3) 
+#define LSM9DS0_ACCEL_X_EN               BIT(0) 
+#define LSM9DS0_ACCEL_Y_EN               BIT(1) 
+#define LSM9DS0_ACCEL_Z_EN               BIT(2) 
 
 #define LSM9DS0_GYRO_ID                  0xD4
 #define LSM9DS0_ACCEL_MAGN_ID            0x49
 
 enum { SCAN_INDEX_X, SCAN_INDEX_Y, SCAN_INDEX_Z };
+enum { 
+  SCAN_INDEX_ACCEL_X, SCAN_INDEX_ACCEL_Y, SCAN_INDEX_ACCEL_Z, 
+  SCAN_INDEX_MAGN_X, SCAN_INDEX_MAGN_Y, SCAN_INDEX_MAGN_Z 
+};
 enum { GYRO, ACCEL_MAGN };
 
 struct lsm9ds0_data {
@@ -144,10 +169,10 @@ struct sensor_odr_avl {
 };
 
 static const struct sensor_odr_avl lsm9ds0_odr_avl[4] = {
-  {95, LSM9DS0_GYRO_ODR_AVL_95HZ_VAL},
-  {190, LSM9DS0_GYRO_ODR_AVL_190HZ_VAL},
-  {380, LSM9DS0_GYRO_ODR_AVL_380HZ_VAL},
-  {760, LSM9DS0_GYRO_ODR_AVL_760HZ_VAL},
+  {95, LSM9DS0_GYRO_ODR_95HZ_VAL},
+  {190, LSM9DS0_GYRO_ODR_190HZ_VAL},
+  {380, LSM9DS0_GYRO_ODR_380HZ_VAL},
+  {760, LSM9DS0_GYRO_ODR_760HZ_VAL},
 };
 
 static ssize_t lsm9ds0_show_samp_freq_avail(struct device *dev,
@@ -259,7 +284,92 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
 };
 
 static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
-  IIO_CHAN_SOFT_TIMESTAMP(0),
+  {
+    .type = IIO_ACCEL,
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .modified = 1,
+    .channel2 = IIO_MOD_X,
+    .scan_index = SCAN_INDEX_ACCEL_X,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 16,
+      .storagebits = 16,
+      .shift = 0,
+      .endianness = IIO_LE,
+    },
+  }, {
+    .type = IIO_ACCEL,
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .modified = 1,
+    .channel2 = IIO_MOD_Y,
+    .scan_index = SCAN_INDEX_ACCEL_Y,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 16,
+      .storagebits = 16,
+      .shift = 0,
+      .endianness = IIO_LE,
+    },
+  }, {
+    .type = IIO_ACCEL,
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .modified = 1,
+    .channel2 = IIO_MOD_Z,
+    .scan_index = SCAN_INDEX_ACCEL_Z,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 16,
+      .storagebits = 16,
+      .shift = 0,
+      .endianness = IIO_LE,
+    },
+  }, {
+    .type = IIO_MAGN,
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .modified = 1,
+    .channel2 = IIO_MOD_X,
+    .scan_index = SCAN_INDEX_MAGN_X
+    .scan_type = {
+      .sign = 's',
+      .realbits = 16,
+      .storagebits = 16,
+      .shift = 0,
+      .endianness = IIO_LE,
+    },
+  }, {
+    .type = IIO_MAGN,
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .modified = 1,
+    .channel2 = IIO_MOD_Y,
+    .scan_index = SCAN_INDEX_MAGN_Y,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 16,
+      .storagebits = 16,
+      .shift = 0,
+      .endianness = IIO_LE,
+    },
+  }, {
+    .type = IIO_MAGN,
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .modified = 1,
+    .channel2 = IIO_MOD_Z,
+    .scan_index = SCAN_INDEX_MAGN_Z,
+    .scan_type = {
+      .sign = 's',
+      .realbits = 16,
+      .storagebits = 16,
+      .shift = 0,
+      .endianness = IIO_LE,
+    },
+  }
+  IIO_CHAN_SOFT_TIMESTAMP(6),
 };
 
 static int lsm9ds0_gyro_read_measurements(struct i2c_client *client, s16 *x, s16 *y, s16 *z)
