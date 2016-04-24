@@ -26,6 +26,7 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/i2c.h>
+#include <linux/bitops.h>
 #include <linux/iio/iio.h>
 #include <linux/iio/sysfs.h>
 #include <linux/iio/trigger_consumer.h>
@@ -112,40 +113,59 @@
 #define LSM9DS0_ACT_THS_REG             (0x3E)
 #define LSM9DS0_ACT_DUR_REG             (0x3F)
 
-#define LSM9DS0_GYRO_ODR_95HZ_VAL        0x00
-#define LSM9DS0_GYRO_ODR_190HZ_VAL       0x01
-#define LSM9DS0_GYRO_ODR_380HZ_VAL       0x02
-#define LSM9DS0_GYRO_ODR_760HZ_VAL       0x03
+#define LSM9DS0_GYRO_ODR_95HZ_VAL       (0x00 << 6)
+#define LSM9DS0_GYRO_ODR_190HZ_VAL      (0x01 << 6)
+#define LSM9DS0_GYRO_ODR_380HZ_VAL      (0x02 << 6)
+#define LSM9DS0_GYRO_ODR_760HZ_VAL      (0x03 << 6)
 
-#define LSM9DS0_ACCEL_ODR_3_125HZ_VAL    0x01
-#define LSM9DS0_ACCEL_ODR_6_5HZ_VAL      0x02
-#define LSM9DS0_ACCEL_ODR_12_5HZ_VAL     0x03
-#define LSM9DS0_ACCEL_ODR_25HZ_VAL       0x04
-#define LSM9DS0_ACCEL_ODR_50HZ_VAL       0x05
-#define LSM9DS0_ACCEL_ODR_100HZ_VAL      0x06
-#define LSM9DS0_ACCEL_ODR_200HZ_VAL      0x07
-#define LSM9DS0_ACCEL_ODR_400HZ_VAL      0x08
-#define LSM9DS0_ACCEL_ODR_800HZ_VAL      0x09
-#define LSM9DS0_ACCEL_ODR_1600HZ_VAL     0x0A
+#define LSM9DS0_ACCEL_POWER_DOWN        (0x00 << 4)
+#define LSM9DS0_ACCEL_ODR_3_125HZ_VAL   (0x01 << 4)
+#define LSM9DS0_ACCEL_ODR_6_25HZ_VAL    (0x02 << 4)
+#define LSM9DS0_ACCEL_ODR_12_5HZ_VAL    (0x03 << 4)
+#define LSM9DS0_ACCEL_ODR_25HZ_VAL      (0x04 << 4)
+#define LSM9DS0_ACCEL_ODR_50HZ_VAL      (0x05 << 4)
+#define LSM9DS0_ACCEL_ODR_100HZ_VAL     (0x06 << 4)
+#define LSM9DS0_ACCEL_ODR_200HZ_VAL     (0x07 << 4)
+#define LSM9DS0_ACCEL_ODR_400HZ_VAL     (0x08 << 4)
+#define LSM9DS0_ACCEL_ODR_800HZ_VAL     (0x09 << 4)
+#define LSM9DS0_ACCEL_ODR_1600HZ_VAL    (0x0A << 4)
 
-#define LSM9DS0_MAGN_ODR_3_125HZ_VAL     0x01
-#define LSM9DS0_MAGN_ODR_6_5HZ_VAL       0x02
-#define LSM9DS0_MAGN_ODR_12_5HZ_VAL      0x03
-#define LSM9DS0_MAGN_ODR_25HZ_VAL        0x04
-#define LSM9DS0_MAGN_ODR_50HZ_VAL        0x05
-#define LSM9DS0_MAGN_ODR_100HZ_VAL       0x06
+#define LSM9DS0_ACCEL_AFS_2G_VAL        (0x00 << 3)
+#define LSM9DS0_ACCEL_AFS_4G_VAL        (0x01 << 3)
+#define LSM9DS0_ACCEL_AFS_6G_VAL        (0x02 << 3)
+#define LSM9DS0_ACCEL_AFS_8G_VAL        (0x03 << 3)
+#define LSM9DS0_ACCEL_AFS_16G_VAL       (0x04 << 3)
 
-#define LSM9DS0_GYRO_FS_245DPS_VAL       0x00
-#define LSM9DS0_GYRO_FS_500DPS_VAL       0x01
-#define LSM9DS0_GYRO_FS_2000DPS_VAL      0x10
+#define LSM9DS0_MAGN_ODR_3_125HZ_VAL    (0x00 << 2)
+#define LSM9DS0_MAGN_ODR_6_25HZ_VAL     (0x01 << 2)
+#define LSM9DS0_MAGN_ODR_12_5HZ_VAL     (0x02 << 2)
+#define LSM9DS0_MAGN_ODR_25HZ_VAL       (0x03 << 2)
+#define LSM9DS0_MAGN_ODR_50HZ_VAL       (0x04 << 2)
+#define LSM9DS0_MAGN_ODR_100HZ_VAL      (0x05 << 2)
 
-#define LSM9DS0_GYRO_X_EN                BIT(1) 
-#define LSM9DS0_GYRO_Y_EN                BIT(0) 
-#define LSM9DS0_GYRO_Z_EN                BIT(2) 
-#define LSM9DS0_GYRO_POWER_DOWN          BIT(3) 
-#define LSM9DS0_ACCEL_X_EN               BIT(0) 
-#define LSM9DS0_ACCEL_Y_EN               BIT(1) 
-#define LSM9DS0_ACCEL_Z_EN               BIT(2) 
+#define LSM9DS0_MAGN_MFS_2_GAUSS_VAL    (0x00 << 5)
+#define LSM9DS0_MAGN_MFS_4_GAUSS_VAL    (0x01 << 5)
+#define LSM9DS0_MAGN_MFS_8_GAUSS_VAL    (0x02 << 5)
+#define LSM9DS0_MAGN_MFS_12_GAUSS_VAL   (0x03 << 5)
+
+#define LSM9DS0_GYRO_FS_245DPS_VAL      (0x00 << 4)
+#define LSM9DS0_GYRO_FS_500DPS_VAL      (0x01 << 4)
+#define LSM9DS0_GYRO_FS_2000DPS_VAL     (0x10 << 4)
+
+#define LSM9DS0_GYRO_X_EN               BIT(1)
+#define LSM9DS0_GYRO_Y_EN               BIT(0) 
+#define LSM9DS0_GYRO_Z_EN               BIT(2) 
+#define LSM9DS0_GYRO_POWER_DOWN         (0x00 << 3)
+#define LSM9DS0_GYRO_NORMAL_MODE        BIT(3)
+#define LSM9DS0_ACCEL_X_EN              BIT(0) 
+#define LSM9DS0_ACCEL_Y_EN              BIT(1) 
+#define LSM9DS0_ACCEL_Z_EN              BIT(2) 
+#define LSM9DS0_TEMP_EN                 BIT(7)
+#define LSM9DS0_MAGN_LOW_RES_VAL        (0x00 << 5)
+#define LSM9DS0_MAGN_HIGH_RES_VAL       (0x03 << 5)
+#define LSM9DS0_MAGN_POWER_DOWN         (0x02)
+#define LSM9DS0_MAGN_CONT_CONV_MODE     (0x00)
+#define LSM9DS0_MAGN_SINGLE_CONV_MODE   (0x01)
 
 #define LSM9DS0_GYRO_ID                  0xD4
 #define LSM9DS0_ACCEL_MAGN_ID            0x49
@@ -332,7 +352,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
-    .scan_index = SCAN_INDEX_MAGN_X
+    .scan_index = SCAN_INDEX_MAGN_X,
     .scan_type = {
       .sign = 's',
       .realbits = 16,
@@ -368,7 +388,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
       .shift = 0,
       .endianness = IIO_LE,
     },
-  }
+  },
   IIO_CHAN_SOFT_TIMESTAMP(6),
 };
 
@@ -456,15 +476,16 @@ static int lsm9ds0_gyro_init(struct i2c_client *client)
   int ret;
 
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_G_REG, 
-      LSM9DS0_GYRO_POWER_DOWN | LSM9DS0_GYRO_X_EN | LSM9DS0_GYRO_Y_EN | LSM9DS0_GYRO_Z_EN);
+      LSM9DS0_GYRO_NORMAL_MODE | LSM9DS0_GYRO_X_EN | 
+      LSM9DS0_GYRO_Y_EN | LSM9DS0_GYRO_Z_EN);
   if (ret < 0) {
-    dev_err(&client->dev, "Failed to write control register.\n");
+    dev_err(&client->dev, "Failed to write control register 5.\n");
     return ret;
   }
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG4_G_REG, 
       LSM9DS0_GYRO_FS_245DPS_VAL);
   if (ret < 0) {
-    dev_err(&client->dev, "Failed to write control register.\n");
+    dev_err(&client->dev, "Failed to write control register 4.\n");
     return ret;
   }
   return 0;
@@ -472,6 +493,39 @@ static int lsm9ds0_gyro_init(struct i2c_client *client)
 
 static int lsm9ds0_accel_magn_init(struct i2c_client *client)
 {
+  int ret;
+
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_XM_REG, 
+      LSM9DS0_ACCEL_ODR_100HZ_VAL | LSM9DS0_ACCEL_X_EN | 
+      LSM9DS0_ACCEL_Y_EN | LSM9DS0_ACCEL_Z_EN);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register 1.\n");
+    return ret;
+  }
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG5_XM_REG, 
+      LSM9DS0_TEMP_EN | LSM9DS0_MAGN_HIGH_RES_VAL | LSM9DS0_MAGN_ODR_50HZ_VAL);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register 5.\n");
+    return ret;
+  }
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG7_XM_REG, 
+      LSM9DS0_MAGN_CONT_CONV_MODE);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register 7.\n");
+    return ret;
+  }
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG2_XM_REG, 
+      LSM9DS0_ACCEL_AFS_2G_VAL);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register 2.\n");
+    return ret;
+  }
+  ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG6_XM_REG, 
+      LSM9DS0_MAGN_MFS_2_GAUSS_VAL);
+  if (ret < 0) {
+    dev_err(&client->dev, "Failed to write control register 6.\n");
+    return ret;
+  }
   return 0;
 } 
 
