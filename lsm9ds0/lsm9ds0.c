@@ -208,6 +208,10 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   IIO_CHAN_SOFT_TIMESTAMP(0),
 };
 
+static int lsmd9s0_gyro_read_measurements(struct i2c_client *client, s16 *x, s16 *y, s16 *z)
+{
+}
+
 static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       struct iio_chan_spec const *channel, 
       int *val, int *val2, long mask)

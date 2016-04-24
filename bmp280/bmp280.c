@@ -186,13 +186,11 @@ static int bmp280_read_measurements(struct i2c_client *client, s32 *temp, s32 *p
 
   buf[0] = BMP280_PRESSURE_MSB_REG;
   ret = i2c_master_send(client, buf, 1);
-  if (ret < 0) {
+  if (ret < 0)
     return ret;
-  }
   ret = i2c_master_recv(client, buf, 6);
-  if (ret < 0) {
+  if (ret < 0)
     return ret;
-  }
   *press = (buf[0] << 12) | (buf[1] << 4) | ((buf[2] & 0xF0) >> 4);
   *temp = (buf[3] << 12) | (buf[4] << 4) | ((buf[5] & 0xF0) >> 4);
   return ret;
@@ -228,7 +226,7 @@ static int bmp280_read_raw(struct iio_dev *iio_dev,
   }
 
   mutex_unlock(&data->lock);
-  return ret;
+  rggeturn ret;
 }
 
 static int bmp280_init(struct i2c_client *client) 
