@@ -619,6 +619,7 @@ static int lsm9ds0_remove(struct i2c_client *client)
 
 static const struct i2c_device_id lsm9ds0_id[] = {
   { "lsm9ds0_gyro", 0 },
+  { "lsm9ds0_accel_magn", 0 },
   { }
 };
 MODULE_DEVICE_TABLE(i2c, lsm9ds0_id);
