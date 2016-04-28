@@ -307,7 +307,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   {
     .type = IIO_ACCEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_ACCEL_X,
@@ -321,7 +321,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   }, {
     .type = IIO_ACCEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_ACCEL_Y,
@@ -335,7 +335,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   }, {
     .type = IIO_ACCEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_ACCEL_Z,
@@ -349,7 +349,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   }, {
     .type = IIO_MAGN,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_MAGN_X,
@@ -363,7 +363,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   }, {
     .type = IIO_MAGN,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_MAGN_Y,
@@ -377,7 +377,7 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   }, {
     .type = IIO_MAGN,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_MAGN_Z,
