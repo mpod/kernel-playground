@@ -614,6 +614,10 @@ error_ret:
 
 static int lsm9ds0_remove(struct i2c_client *client)
 {
+  struct iio_dev *indio_dev = i2c_get_clientdata(client);
+  iio_device_unregister(indio_dev);
+  iio_device_free(indio_dev);
+
   return 0;
 }
 
