@@ -244,7 +244,30 @@ static ssize_t lsm9ds0_show_samp_freq_avail(struct device *dev,
 static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
+	//struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+	//struct lsm9ds0_data *data = iio_priv(indio_dev);
   size_t len = 0;
+  int n;
+  const struct sensor_fs_avl (*avl)[];
+
+  if (strcmp(attr->attr.name, "in_gyro_scale_available") == 0) {
+    avl = &lsm9ds0_gyro_fs_avl;
+    n = ARRAY_SIZE(lsm9ds0_gyro_fs_avl);
+  } else if (strcmp(attr->attr.name, "in_accel_scale_available") == 0) {
+    avl = &lsm9ds0_accel_fs_avl;
+    n = ARRAY_SIZE(lsm9ds0_accel_fs_avl);
+  } else if (strcmp(attr->attr.name, "in_magn_scale_available") == 0) {
+    avl = &lsm9ds0_magn_fs_avl;
+    n = ARRAY_SIZE(lsm9ds0_magn_fs_avl);
+  } else {
+    return -EINVAL;
+  }
+
+  while (n-- > 0)
+    len += scnprintf(buf + len, PAGE_SIZE - len,
+        "%d ", (*avl)[n].num);
+  buf[len - 1] = '\n';
+  
   return len;
 }
 
