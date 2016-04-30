@@ -130,11 +130,16 @@
 #define LSM9DS0_ACCEL_ODR_800HZ_VAL     (0x09 << 4)
 #define LSM9DS0_ACCEL_ODR_1600HZ_VAL    (0x0A << 4)
 
-#define LSM9DS0_ACCEL_AFS_2G_VAL        (0x00 << 3)
-#define LSM9DS0_ACCEL_AFS_4G_VAL        (0x01 << 3)
-#define LSM9DS0_ACCEL_AFS_6G_VAL        (0x02 << 3)
-#define LSM9DS0_ACCEL_AFS_8G_VAL        (0x03 << 3)
-#define LSM9DS0_ACCEL_AFS_16G_VAL       (0x04 << 3)
+#define LSM9DS0_ACCEL_FS_2G_VAL         (0x00 << 3)
+#define LSM9DS0_ACCEL_FS_4G_VAL         (0x01 << 3)
+#define LSM9DS0_ACCEL_FS_6G_VAL         (0x02 << 3)
+#define LSM9DS0_ACCEL_FS_8G_VAL         (0x03 << 3)
+#define LSM9DS0_ACCEL_FS_16G_VAL        (0x04 << 3)
+#define LSM9DS0_ACCEL_FS_2G_GAIN        61     /* ug/LSB	*/
+#define LSM9DS0_ACCEL_FS_4G_GAIN        122    /* ug/LSB	*/
+#define LSM9DS0_ACCEL_FS_6G_GAIN        183    /* ug/LSB	*/
+#define LSM9DS0_ACCEL_FS_8G_GAIN        244    /* ug/LSB	*/
+#define LSM9DS0_ACCEL_FS_16G_GAIN       732    /* ug/LSB	*/
 
 #define LSM9DS0_MAGN_ODR_3_125HZ_VAL    (0x00 << 2)
 #define LSM9DS0_MAGN_ODR_6_25HZ_VAL     (0x01 << 2)
@@ -143,14 +148,21 @@
 #define LSM9DS0_MAGN_ODR_50HZ_VAL       (0x04 << 2)
 #define LSM9DS0_MAGN_ODR_100HZ_VAL      (0x05 << 2)
 
-#define LSM9DS0_MAGN_MFS_2_GAUSS_VAL    (0x00 << 5)
-#define LSM9DS0_MAGN_MFS_4_GAUSS_VAL    (0x01 << 5)
-#define LSM9DS0_MAGN_MFS_8_GAUSS_VAL    (0x02 << 5)
-#define LSM9DS0_MAGN_MFS_12_GAUSS_VAL   (0x03 << 5)
+#define LSM9DS0_MAGN_FS_2GAUSS_VAL      (0x00 << 5)
+#define LSM9DS0_MAGN_FS_4GAUSS_VAL      (0x01 << 5)
+#define LSM9DS0_MAGN_FS_8GAUSS_VAL      (0x02 << 5)
+#define LSM9DS0_MAGN_FS_12GAUSS_VAL     (0x03 << 5)
+#define LSM9DS0_MAGN_FS_2GAUSS_GAIN     80     /* ugauss/LSB	*/
+#define LSM9DS0_MAGN_FS_4GAUSS_GAIN     160    /* ugauss/LSB	*/
+#define LSM9DS0_MAGN_FS_8GAUSS_GAIN     320    /* ugauss/LSB	*/
+#define LSM9DS0_MAGN_FS_12GAUSS_GAIN    480    /* ugauss/LSB	*/
 
 #define LSM9DS0_GYRO_FS_245DPS_VAL      (0x00 << 4)
 #define LSM9DS0_GYRO_FS_500DPS_VAL      (0x01 << 4)
-#define LSM9DS0_GYRO_FS_2000DPS_VAL     (0x10 << 4)
+#define LSM9DS0_GYRO_FS_2000DPS_VAL     (0x02 << 4)
+#define LSM9DS0_GYRO_FS_245DPS_GAIN     8750   /* udps/LSB */
+#define LSM9DS0_GYRO_FS_500DPS_GAIN     17500  /* udps/LSB */
+#define LSM9DS0_GYRO_FS_2000DPS_GAIN    70000  /* udps/LSB */
 
 #define LSM9DS0_GYRO_X_EN               BIT(1)
 #define LSM9DS0_GYRO_Y_EN               BIT(0) 
@@ -181,32 +193,50 @@ struct lsm9ds0_data {
   struct i2c_client *client;
   struct mutex lock;
   int sensor_type;
+  int gyro_scale;
+  int accel_scale;
+  int magn_scale;
 };
 
-struct sensor_odr_avl {
-  unsigned int hz;
+struct sensor_fs_avl {
+  unsigned int num;
   u8 value;
+  unsigned int gain;
 };
 
-static const struct sensor_odr_avl lsm9ds0_odr_avl[4] = {
-  {95, LSM9DS0_GYRO_ODR_95HZ_VAL},
-  {190, LSM9DS0_GYRO_ODR_190HZ_VAL},
-  {380, LSM9DS0_GYRO_ODR_380HZ_VAL},
-  {760, LSM9DS0_GYRO_ODR_760HZ_VAL},
+static const struct sensor_fs_avl lsm9ds0_gyro_fs_avl[3] = {
+  {245,  LSM9DS0_GYRO_FS_245DPS_VAL,  LSM9DS0_GYRO_FS_245DPS_GAIN},
+  {500,  LSM9DS0_GYRO_FS_500DPS_VAL,  LSM9DS0_GYRO_FS_500DPS_GAIN},
+  {2000, LSM9DS0_GYRO_FS_2000DPS_VAL, LSM9DS0_GYRO_FS_2000DPS_GAIN},
+};
+
+static const struct sensor_fs_avl lsm9ds0_accel_fs_avl[5] = {
+  {2,  LSM9DS0_ACCEL_FS_2G_VAL,  LSM9DS0_ACCEL_FS_2G_GAIN},
+  {4,  LSM9DS0_ACCEL_FS_4G_VAL,  LSM9DS0_ACCEL_FS_4G_GAIN},
+  {6,  LSM9DS0_ACCEL_FS_6G_VAL,  LSM9DS0_ACCEL_FS_6G_GAIN},
+  {8,  LSM9DS0_ACCEL_FS_8G_VAL,  LSM9DS0_ACCEL_FS_8G_GAIN},
+  {16, LSM9DS0_ACCEL_FS_16G_VAL, LSM9DS0_ACCEL_FS_16G_GAIN},
+};
+
+static const struct sensor_fs_avl lsm9ds0_magn_fs_avl[4] = {
+  {2,  LSM9DS0_MAGN_FS_2GAUSS_VAL,  LSM9DS0_MAGN_FS_2GAUSS_GAIN},
+  {4,  LSM9DS0_MAGN_FS_4GAUSS_VAL,  LSM9DS0_MAGN_FS_4GAUSS_GAIN},
+  {8,  LSM9DS0_MAGN_FS_8GAUSS_VAL,  LSM9DS0_MAGN_FS_8GAUSS_GAIN},
+  {12, LSM9DS0_MAGN_FS_12GAUSS_VAL, LSM9DS0_MAGN_FS_12GAUSS_GAIN},
 };
 
 static ssize_t lsm9ds0_show_samp_freq_avail(struct device *dev,
         struct device_attribute *attr, char *buf)
 {
   size_t len = 0;
-  int n = ARRAY_SIZE(lsm9ds0_odr_avl);
+  //int n = ARRAY_SIZE(lsm9ds0_odr_avl);
 
-  while (n-- > 0)
-    len += scnprintf(buf + len, PAGE_SIZE - len,
-      "%d ", lsm9ds0_odr_avl[n].hz);
+  //while (n-- > 0)
+  //  len += scnprintf(buf + len, PAGE_SIZE - len,
+  //    "%d ", lsm9ds0_odr_avl[n].hz);
 
-  /* replace trailing space by newline */
-  buf[len - 1] = '\n';
+  ///* replace trailing space by newline */
+  //buf[len - 1] = '\n';
 
   return len;
 }
@@ -431,16 +461,13 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
     case IIO_ACCEL:
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_A_REG, &x, &y, &z);
-      x = y = z = 0;
       break;
     case IIO_MAGN:
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_M_REG, &x, &y, &z);
-      x = y = z = 0;
       break; 
     default:
       return -EINVAL;
-      break;
     }
     if (err < 0)
       goto read_error;
@@ -457,11 +484,23 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
     }
     return IIO_VAL_INT;
   case IIO_CHAN_INFO_SCALE:
-    return IIO_VAL_INT;
-    break;
+    *val = 0;
+    switch (channel->type) {
+    case IIO_ANGL_VEL:
+      *val2 = data->gyro_scale;
+      break;
+    case IIO_ACCEL:
+      *val2 = data->accel_scale;
+      break;
+    case IIO_MAGN:
+      *val2 = data->magn_scale;
+      break;
+    default:
+      return -EINVAL;
+    }
+    return IIO_VAL_INT_PLUS_MICRO;
   case IIO_CHAN_INFO_SAMP_FREQ:
     return IIO_VAL_INT;
-    break;
   default:
     return -EINVAL;
   }
@@ -480,6 +519,8 @@ static const struct iio_info lsm9ds0_info = {
 static int lsm9ds0_gyro_init(struct i2c_client *client)
 {
   int ret;
+  struct iio_dev *indio_dev;
+  struct lsm9ds0_data *data;
 
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_G_REG, 
       LSM9DS0_GYRO_NORMAL_MODE | LSM9DS0_GYRO_X_EN | 
@@ -494,12 +535,20 @@ static int lsm9ds0_gyro_init(struct i2c_client *client)
     dev_err(&client->dev, "Failed to write control register 4.\n");
     return ret;
   }
+
+  indio_dev = i2c_get_clientdata(client);
+  data = iio_priv(indio_dev);
+
+  data->gyro_scale = LSM9DS0_GYRO_FS_245DPS_GAIN;
+
   return 0;
 }
 
 static int lsm9ds0_accel_magn_init(struct i2c_client *client)
 {
   int ret;
+  struct iio_dev *indio_dev;
+  struct lsm9ds0_data *data;
 
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG1_XM_REG, 
       LSM9DS0_ACCEL_ODR_100HZ_VAL | LSM9DS0_ACCEL_X_EN | 
@@ -521,17 +570,24 @@ static int lsm9ds0_accel_magn_init(struct i2c_client *client)
     return ret;
   }
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG2_XM_REG, 
-      LSM9DS0_ACCEL_AFS_2G_VAL);
+      LSM9DS0_ACCEL_FS_2G_VAL);
   if (ret < 0) {
     dev_err(&client->dev, "Failed to write control register 2.\n");
     return ret;
   }
   ret = i2c_smbus_write_byte_data(client, LSM9DS0_CTRL_REG6_XM_REG, 
-      LSM9DS0_MAGN_MFS_2_GAUSS_VAL);
+      LSM9DS0_MAGN_FS_2GAUSS_VAL);
   if (ret < 0) {
     dev_err(&client->dev, "Failed to write control register 6.\n");
     return ret;
   }
+
+  indio_dev = i2c_get_clientdata(client);
+  data = iio_priv(indio_dev);
+
+  data->accel_scale = LSM9DS0_ACCEL_FS_2G_GAIN;
+  data->magn_scale = LSM9DS0_MAGN_FS_2GAUSS_GAIN;
+
   return 0;
 } 
 
