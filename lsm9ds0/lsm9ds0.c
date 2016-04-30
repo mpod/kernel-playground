@@ -241,18 +241,41 @@ static ssize_t lsm9ds0_show_samp_freq_avail(struct device *dev,
   return len;
 }
 
-static IIO_DEV_ATTR_SAMP_FREQ_AVAIL(lsm9ds0_show_samp_freq_avail);
+static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
+				struct device_attribute *attr, char *buf)
+{
+  size_t len = 0;
+  return len;
+}
 
-static struct attribute *lsm9ds0_attributes[] = {
+static IIO_DEV_ATTR_SAMP_FREQ_AVAIL(lsm9ds0_show_samp_freq_avail);
+static IIO_DEVICE_ATTR(in_accel_scale_available, S_IRUGO,
+	lsm9ds0_show_scale_avail, NULL, 0);
+static IIO_DEVICE_ATTR(in_magn_scale_available, S_IRUGO,
+	lsm9ds0_show_scale_avail, NULL, 0);
+static IIO_DEVICE_ATTR(in_gyro_scale_available, S_IRUGO,
+	lsm9ds0_show_scale_avail, NULL, 0);
+
+static struct attribute *lsm9ds0_gyro_attributes[] = {
   &iio_dev_attr_sampling_frequency_available.dev_attr.attr,
-  //&iio_dev_attr_in_accel_scale_available.dev_attr.attr,
+  &iio_dev_attr_in_gyro_scale_available.dev_attr.attr,
   NULL
 };
 
-static const struct attribute_group lsm9ds0_group = {
-  .attrs = lsm9ds0_attributes,
+static struct attribute *lsm9ds0_accel_magn_attributes[] = {
+  &iio_dev_attr_sampling_frequency_available.dev_attr.attr,
+  &iio_dev_attr_in_accel_scale_available.dev_attr.attr,
+  &iio_dev_attr_in_magn_scale_available.dev_attr.attr,
+  NULL
 };
 
+static const struct attribute_group lsm9ds0_gyro_group = {
+  .attrs = lsm9ds0_gyro_attributes,
+};
+
+static const struct attribute_group lsm9ds0_accel_magn_group = {
+  .attrs = lsm9ds0_accel_magn_attributes,
+};
 
 static const struct iio_buffer_setup_ops lsm9ds0_buffer_setup_ops = {
   .postenable = &iio_triggered_buffer_postenable,
@@ -290,7 +313,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   {
     .type = IIO_ANGL_VEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_X,
@@ -304,7 +327,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   }, {
     .type = IIO_ANGL_VEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_Y,
@@ -318,7 +341,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   }, {
     .type = IIO_ANGL_VEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_Z,
@@ -529,9 +552,14 @@ read_error:
   return err;
 }
 
+static const struct iio_info lsm9ds0_gyro_info = {
+	.attrs = &lsm9ds0_gyro_group,
+  .read_raw = lsm9ds0_read_raw,
+  .driver_module = THIS_MODULE,
+};
 
-static const struct iio_info lsm9ds0_info = {
-	.attrs = &lsm9ds0_group,
+static const struct iio_info lsm9ds0_accel_magn_info = {
+	.attrs = &lsm9ds0_accel_magn_group,
   .read_raw = lsm9ds0_read_raw,
   .driver_module = THIS_MODULE,
 };
@@ -657,15 +685,16 @@ static int lsm9ds0_probe(struct i2c_client *client,
 
   indio_dev->dev.parent = &client->dev;
   indio_dev->name = dev_name(&client->dev);
-  indio_dev->info = &lsm9ds0_info;
   indio_dev->modes = INDIO_DIRECT_MODE;
 
   if (sensor_type == GYRO) {
     ret = lsm9ds0_gyro_init(client);
+    indio_dev->info = &lsm9ds0_gyro_info;
     indio_dev->channels = lsm9ds0_gyro_channels;
     indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_gyro_channels);
   } else {
     ret = lsm9ds0_accel_magn_init(client);
+    indio_dev->info = &lsm9ds0_accel_magn_info;
     indio_dev->channels = lsm9ds0_accel_magn_channels;
     indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_accel_magn_channels);
   }
@@ -677,7 +706,6 @@ static int lsm9ds0_probe(struct i2c_client *client,
   if (ret < 0)
     goto error_free_device;
 
-  dev_info(&client->dev, "Driver registered.\n");
   return 0;
 
 error_free_device:
