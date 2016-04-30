@@ -226,7 +226,7 @@ static int bmp280_read_raw(struct iio_dev *iio_dev,
   }
 
   mutex_unlock(&data->lock);
-  rggeturn ret;
+  return ret;
 }
 
 static int bmp280_init(struct i2c_client *client) 

@@ -225,22 +225,6 @@ static const struct sensor_fs_avl lsm9ds0_magn_fs_avl[4] = {
   {12, LSM9DS0_MAGN_FS_12GAUSS_VAL, LSM9DS0_MAGN_FS_12GAUSS_GAIN},
 };
 
-static ssize_t lsm9ds0_show_samp_freq_avail(struct device *dev,
-        struct device_attribute *attr, char *buf)
-{
-  size_t len = 0;
-  //int n = ARRAY_SIZE(lsm9ds0_odr_avl);
-
-  //while (n-- > 0)
-  //  len += scnprintf(buf + len, PAGE_SIZE - len,
-  //    "%d ", lsm9ds0_odr_avl[n].hz);
-
-  ///* replace trailing space by newline */
-  //buf[len - 1] = '\n';
-
-  return len;
-}
-
 static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
@@ -271,7 +255,6 @@ static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
   return len;
 }
 
-static IIO_DEV_ATTR_SAMP_FREQ_AVAIL(lsm9ds0_show_samp_freq_avail);
 static IIO_DEVICE_ATTR(in_accel_scale_available, S_IRUGO,
 	lsm9ds0_show_scale_avail, NULL, 0);
 static IIO_DEVICE_ATTR(in_magn_scale_available, S_IRUGO,
@@ -280,13 +263,11 @@ static IIO_DEVICE_ATTR(in_gyro_scale_available, S_IRUGO,
 	lsm9ds0_show_scale_avail, NULL, 0);
 
 static struct attribute *lsm9ds0_gyro_attributes[] = {
-  &iio_dev_attr_sampling_frequency_available.dev_attr.attr,
   &iio_dev_attr_in_gyro_scale_available.dev_attr.attr,
   NULL
 };
 
 static struct attribute *lsm9ds0_accel_magn_attributes[] = {
-  &iio_dev_attr_sampling_frequency_available.dev_attr.attr,
   &iio_dev_attr_in_accel_scale_available.dev_attr.attr,
   &iio_dev_attr_in_magn_scale_available.dev_attr.attr,
   NULL
@@ -499,6 +480,7 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
   int scale = 0;
 
   if (mask == IIO_CHAN_INFO_RAW || mask == IIO_CHAN_INFO_PROCESSED) {
+		mutex_lock(&data->lock);
     switch (channel->type) {
     case IIO_ANGL_VEL:
       err = lsm9ds0_read_measurements(data->client, 
@@ -518,6 +500,7 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
     default:
       return -EINVAL;
     }
+    mutex_unlock(&data->lock);
     if (err < 0)
       goto read_error;
   }
@@ -575,15 +558,24 @@ read_error:
   return err;
 }
 
+static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
+      struct iio_chan_spec const *chan,
+      int val, int val2, long mask)
+{
+  return 0;
+}
+
 static const struct iio_info lsm9ds0_gyro_info = {
 	.attrs = &lsm9ds0_gyro_group,
   .read_raw = lsm9ds0_read_raw,
+  .write_raw = lsm9ds0_write_raw,
   .driver_module = THIS_MODULE,
 };
 
 static const struct iio_info lsm9ds0_accel_magn_info = {
 	.attrs = &lsm9ds0_accel_magn_group,
   .read_raw = lsm9ds0_read_raw,
+  .write_raw = lsm9ds0_write_raw,
   .driver_module = THIS_MODULE,
 };
 
