@@ -289,8 +289,8 @@ done:
 static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   {
     .type = IIO_ANGL_VEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_X,
@@ -303,8 +303,8 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
     },
   }, {
     .type = IIO_ANGL_VEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_Y,
@@ -317,8 +317,8 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
     },
   }, {
     .type = IIO_ANGL_VEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_Z,
@@ -336,8 +336,8 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
 static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   {
     .type = IIO_ACCEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_ACCEL_X,
@@ -350,8 +350,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_ACCEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_ACCEL_Y,
@@ -364,8 +364,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_ACCEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_ACCEL_Z,
@@ -378,8 +378,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_MAGN,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_MAGN_X,
@@ -392,8 +392,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_MAGN,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_MAGN_Y,
@@ -406,8 +406,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_MAGN,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_MAGN_Z,
@@ -450,27 +450,34 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
   struct lsm9ds0_data *data = iio_priv(iio_dev);
   int err = 0;
   s16 x = 0, y = 0, z = 0;
+  int scale = 0;
 
-  switch (mask) {
-  case IIO_CHAN_INFO_RAW:
+  if (mask == IIO_CHAN_INFO_RAW || mask == IIO_CHAN_INFO_PROCESSED) {
     switch (channel->type) {
     case IIO_ANGL_VEL:
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_G_REG, &x, &y, &z);
+      scale = data->gyro_scale;
       break;
     case IIO_ACCEL:
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_A_REG, &x, &y, &z);
+      scale = data->accel_scale;
       break;
     case IIO_MAGN:
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_M_REG, &x, &y, &z);
+      scale = data->magn_scale;
       break; 
     default:
       return -EINVAL;
     }
     if (err < 0)
       goto read_error;
+  }
+
+  switch (mask) {
+  case IIO_CHAN_INFO_RAW:
     switch (channel->channel2) {
     case IIO_MOD_X:
       *val = x;
@@ -480,6 +487,19 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       break;
     case IIO_MOD_Z:
       *val = z;
+      break;
+    }
+    return IIO_VAL_INT;
+  case IIO_CHAN_INFO_PROCESSED:
+    switch (channel->channel2) {
+    case IIO_MOD_X:
+      *val = x * scale;
+      break;
+    case IIO_MOD_Y:
+      *val = y * scale;
+      break;
+    case IIO_MOD_Z:
+      *val = z * scale;
       break;
     }
     return IIO_VAL_INT;
@@ -601,7 +621,6 @@ static int lsm9ds0_probe(struct i2c_client *client,
   int ret;
 
   
-  dev_info(&client->dev, "Entering LSM9DS0 probe...\n");
   if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_WORD_DATA)) {
     ret = -ENODEV;
     goto error_ret;
@@ -612,7 +631,6 @@ static int lsm9ds0_probe(struct i2c_client *client,
     ret = -EINVAL;
     goto error_ret;
   }
-  dev_info(&client->dev, "Chip id found: 0x%x\n", ret);
   if (ret == LSM9DS0_GYRO_ID) {
     dev_info(&client->dev, "Gyroscope found.\n");
     sensor_type = GYRO;
@@ -659,7 +677,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
   if (ret < 0)
     goto error_free_device;
 
-  dev_info(&client->dev, "LSM9DS0 registered.\n");
+  dev_info(&client->dev, "Driver registered.\n");
   return 0;
 
 error_free_device:
@@ -674,6 +692,8 @@ static int lsm9ds0_remove(struct i2c_client *client)
   iio_device_unregister(indio_dev);
   iio_device_free(indio_dev);
 
+  dev_info(&client->dev, "Driver removed.");
+
   return 0;
 }
 
@@ -686,7 +706,7 @@ MODULE_DEVICE_TABLE(i2c, lsm9ds0_id);
 
 static struct i2c_driver lsm9ds0_driver = {
   .driver = {
-    .name = "lsm9ds0_gyro",
+    .name = "lsm9ds0",
     .owner = THIS_MODULE,
   },
   .probe = lsm9ds0_probe,
