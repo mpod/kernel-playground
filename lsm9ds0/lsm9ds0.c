@@ -130,6 +130,7 @@
 #define LSM9DS0_ACCEL_ODR_800HZ_VAL     (0x09 << 4)
 #define LSM9DS0_ACCEL_ODR_1600HZ_VAL    (0x0A << 4)
 
+#define LSM9DS0_ACCEL_FS_MASK           (0x03 << 3)
 #define LSM9DS0_ACCEL_FS_2G_VAL         (0x00 << 3)
 #define LSM9DS0_ACCEL_FS_4G_VAL         (0x01 << 3)
 #define LSM9DS0_ACCEL_FS_6G_VAL         (0x02 << 3)
@@ -148,6 +149,7 @@
 #define LSM9DS0_MAGN_ODR_50HZ_VAL       (0x04 << 2)
 #define LSM9DS0_MAGN_ODR_100HZ_VAL      (0x05 << 2)
 
+#define LSM9DS0_MAGN_FS_MASK            (0x03 << 5)
 #define LSM9DS0_MAGN_FS_2GAUSS_VAL      (0x00 << 5)
 #define LSM9DS0_MAGN_FS_4GAUSS_VAL      (0x01 << 5)
 #define LSM9DS0_MAGN_FS_8GAUSS_VAL      (0x02 << 5)
@@ -157,6 +159,7 @@
 #define LSM9DS0_MAGN_FS_8GAUSS_GAIN     320    /* ugauss/LSB	*/
 #define LSM9DS0_MAGN_FS_12GAUSS_GAIN    480    /* ugauss/LSB	*/
 
+#define LSM9DS0_GYRO_FS_MASK            (0x03 << 4)
 #define LSM9DS0_GYRO_FS_245DPS_VAL      (0x00 << 4)
 #define LSM9DS0_GYRO_FS_500DPS_VAL      (0x01 << 4)
 #define LSM9DS0_GYRO_FS_2000DPS_VAL     (0x02 << 4)
@@ -249,7 +252,7 @@ static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
 
   while (n-- > 0)
     len += scnprintf(buf + len, PAGE_SIZE - len,
-        "%d ", (*avl)[n].num);
+        "0.%06u ", (*avl)[n].gain);
   buf[len - 1] = '\n';
   
   return len;
@@ -316,8 +319,8 @@ done:
 static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   {
     .type = IIO_ANGL_VEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_X,
@@ -330,8 +333,8 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
     },
   }, {
     .type = IIO_ANGL_VEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_Y,
@@ -344,8 +347,8 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
     },
   }, {
     .type = IIO_ANGL_VEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ) | BIT(IIO_CHAN_INFO_SCALE), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_Z,
@@ -363,8 +366,8 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
 static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
   {
     .type = IIO_ACCEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_ACCEL_X,
@@ -377,8 +380,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_ACCEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_ACCEL_Y,
@@ -391,8 +394,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_ACCEL,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_ACCEL_Z,
@@ -405,8 +408,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_MAGN,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_MAGN_X,
@@ -419,8 +422,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_MAGN,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_MAGN_Y,
@@ -433,8 +436,8 @@ static const struct iio_chan_spec lsm9ds0_accel_magn_channels[] = {
     },
   }, {
     .type = IIO_MAGN,
-    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_PROCESSED), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE) | BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_MAGN_Z,
@@ -479,7 +482,8 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
   s16 x = 0, y = 0, z = 0;
   int scale = 0;
 
-  if (mask == IIO_CHAN_INFO_RAW || mask == IIO_CHAN_INFO_PROCESSED) {
+  switch (mask) {
+  case IIO_CHAN_INFO_RAW:
 		mutex_lock(&data->lock);
     switch (channel->type) {
     case IIO_ANGL_VEL:
@@ -503,10 +507,7 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
     mutex_unlock(&data->lock);
     if (err < 0)
       goto read_error;
-  }
 
-  switch (mask) {
-  case IIO_CHAN_INFO_RAW:
     switch (channel->channel2) {
     case IIO_MOD_X:
       *val = x;
@@ -516,19 +517,6 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       break;
     case IIO_MOD_Z:
       *val = z;
-      break;
-    }
-    return IIO_VAL_INT;
-  case IIO_CHAN_INFO_PROCESSED:
-    switch (channel->channel2) {
-    case IIO_MOD_X:
-      *val = x * scale;
-      break;
-    case IIO_MOD_Y:
-      *val = y * scale;
-      break;
-    case IIO_MOD_Z:
-      *val = z * scale;
       break;
     }
     return IIO_VAL_INT;
@@ -548,8 +536,6 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
       return -EINVAL;
     }
     return IIO_VAL_INT_PLUS_MICRO;
-  case IIO_CHAN_INFO_SAMP_FREQ:
-    return IIO_VAL_INT;
   default:
     return -EINVAL;
   }
@@ -558,10 +544,85 @@ read_error:
   return err;
 }
 
+static int lsm9ds0_write_config(struct i2c_client *client,
+    u8 reg_address, u8 mask, u8 value)
+{
+  u8 reg;
+  s32 ret;
+  ret = i2c_smbus_read_byte_data(client, reg_address);
+  if (ret < 0) 
+    return -EINVAL;
+
+  reg = (u8)ret;
+  reg &= ~mask;
+  reg |= value;
+
+  ret = i2c_smbus_write_byte_data(client, reg_address, reg); 
+
+  return ret;  
+} 
+
 static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
-      struct iio_chan_spec const *chan,
+      struct iio_chan_spec const *channel,
       int val, int val2, long mask)
 {
+	struct lsm9ds0_data *data = iio_priv(indio_dev);
+  struct i2c_client *client = data->client;
+  const struct sensor_fs_avl (*avl)[];
+  int n, i, err;
+  u8 reg_address, reg_mask, new_value;
+  int *scale_in_data;
+
+  mutex_lock(&data->lock);
+	switch (mask) {
+  case IIO_CHAN_INFO_SCALE:
+    dev_info(&client->dev, "Vals %d %d\n", val, val2);
+    switch (channel->type) {
+    case IIO_ANGL_VEL:
+      avl = &lsm9ds0_gyro_fs_avl;
+      n = ARRAY_SIZE(lsm9ds0_gyro_fs_avl);
+      reg_address = LSM9DS0_CTRL_REG4_G_REG;
+      reg_mask = LSM9DS0_GYRO_FS_MASK;
+      scale_in_data = &(data->gyro_scale);
+      break;
+    case IIO_ACCEL:
+      avl = &lsm9ds0_accel_fs_avl;
+      n = ARRAY_SIZE(lsm9ds0_accel_fs_avl);
+      reg_address = LSM9DS0_CTRL_REG2_XM_REG;
+      reg_mask = LSM9DS0_ACCEL_FS_MASK;
+      scale_in_data = &(data->accel_scale);
+      break;
+    case IIO_MAGN:
+      avl = &lsm9ds0_magn_fs_avl;
+      n = ARRAY_SIZE(lsm9ds0_magn_fs_avl);
+      reg_address = LSM9DS0_CTRL_REG6_XM_REG;
+      reg_mask = LSM9DS0_MAGN_FS_MASK;
+      scale_in_data = &(data->magn_scale);
+      break;
+    default:
+      return -EINVAL;
+    }
+    err = -EINVAL;
+    for (i = 0; i < n; i++) {
+      if ((*avl)[i].gain == val2) {
+        err = 0;
+        new_value = (*avl)[i].value;
+        break;
+      }
+    }
+    if (err < 0)
+      return err;
+
+    err = lsm9ds0_write_config(client, reg_address, reg_mask, new_value);
+    if (err < 0)
+      return err;
+
+    *scale_in_data = (*avl)[i].gain;
+    break;
+  default:
+    return -EINVAL;
+  }
+  mutex_unlock(&data->lock);
   return 0;
 }
 
