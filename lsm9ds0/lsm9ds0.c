@@ -136,11 +136,11 @@
 #define LSM9DS0_ACCEL_FS_6G_VAL         (0x02 << 3)
 #define LSM9DS0_ACCEL_FS_8G_VAL         (0x03 << 3)
 #define LSM9DS0_ACCEL_FS_16G_VAL        (0x04 << 3)
-#define LSM9DS0_ACCEL_FS_2G_GAIN        61     /* ug/LSB	*/
-#define LSM9DS0_ACCEL_FS_4G_GAIN        122    /* ug/LSB	*/
-#define LSM9DS0_ACCEL_FS_6G_GAIN        183    /* ug/LSB	*/
-#define LSM9DS0_ACCEL_FS_8G_GAIN        244    /* ug/LSB	*/
-#define LSM9DS0_ACCEL_FS_16G_GAIN       732    /* ug/LSB	*/
+#define LSM9DS0_ACCEL_FS_2G_GAIN        61     /* ug/LSB  */
+#define LSM9DS0_ACCEL_FS_4G_GAIN        122    /* ug/LSB  */
+#define LSM9DS0_ACCEL_FS_6G_GAIN        183    /* ug/LSB  */
+#define LSM9DS0_ACCEL_FS_8G_GAIN        244    /* ug/LSB  */
+#define LSM9DS0_ACCEL_FS_16G_GAIN       732    /* ug/LSB  */
 
 #define LSM9DS0_MAGN_ODR_3_125HZ_VAL    (0x00 << 2)
 #define LSM9DS0_MAGN_ODR_6_25HZ_VAL     (0x01 << 2)
@@ -154,10 +154,10 @@
 #define LSM9DS0_MAGN_FS_4GAUSS_VAL      (0x01 << 5)
 #define LSM9DS0_MAGN_FS_8GAUSS_VAL      (0x02 << 5)
 #define LSM9DS0_MAGN_FS_12GAUSS_VAL     (0x03 << 5)
-#define LSM9DS0_MAGN_FS_2GAUSS_GAIN     80     /* ugauss/LSB	*/
-#define LSM9DS0_MAGN_FS_4GAUSS_GAIN     160    /* ugauss/LSB	*/
-#define LSM9DS0_MAGN_FS_8GAUSS_GAIN     320    /* ugauss/LSB	*/
-#define LSM9DS0_MAGN_FS_12GAUSS_GAIN    480    /* ugauss/LSB	*/
+#define LSM9DS0_MAGN_FS_2GAUSS_GAIN     80     /* ugauss/LSB  */
+#define LSM9DS0_MAGN_FS_4GAUSS_GAIN     160    /* ugauss/LSB  */
+#define LSM9DS0_MAGN_FS_8GAUSS_GAIN     320    /* ugauss/LSB  */
+#define LSM9DS0_MAGN_FS_12GAUSS_GAIN    480    /* ugauss/LSB  */
 
 #define LSM9DS0_GYRO_FS_MASK            (0x03 << 4)
 #define LSM9DS0_GYRO_FS_245DPS_VAL      (0x00 << 4)
@@ -229,10 +229,10 @@ static const struct sensor_fs_avl lsm9ds0_magn_fs_avl[4] = {
 };
 
 static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
-				struct device_attribute *attr, char *buf)
+        struct device_attribute *attr, char *buf)
 {
-	//struct iio_dev *indio_dev = dev_to_iio_dev(dev);
-	//struct lsm9ds0_data *data = iio_priv(indio_dev);
+  //struct iio_dev *indio_dev = dev_to_iio_dev(dev);
+  //struct lsm9ds0_data *data = iio_priv(indio_dev);
   size_t len = 0;
   int n;
   const struct sensor_fs_avl (*avl)[];
@@ -259,11 +259,11 @@ static ssize_t lsm9ds0_show_scale_avail(struct device *dev,
 }
 
 static IIO_DEVICE_ATTR(in_accel_scale_available, S_IRUGO,
-	lsm9ds0_show_scale_avail, NULL, 0);
+  lsm9ds0_show_scale_avail, NULL, 0);
 static IIO_DEVICE_ATTR(in_magn_scale_available, S_IRUGO,
-	lsm9ds0_show_scale_avail, NULL, 0);
+  lsm9ds0_show_scale_avail, NULL, 0);
 static IIO_DEVICE_ATTR(in_gyro_scale_available, S_IRUGO,
-	lsm9ds0_show_scale_avail, NULL, 0);
+  lsm9ds0_show_scale_avail, NULL, 0);
 
 static struct attribute *lsm9ds0_gyro_attributes[] = {
   &iio_dev_attr_in_gyro_scale_available.dev_attr.attr,
@@ -288,33 +288,6 @@ static const struct iio_buffer_setup_ops lsm9ds0_buffer_setup_ops = {
   .postenable = &iio_triggered_buffer_postenable,
   .predisable = &iio_triggered_buffer_predisable,
 };
-
-/*static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
-{
-  struct iio_poll_func *pf = p;
-  struct iio_dev *indio_dev = pf->indio_dev;
-  u32 *buf_data;
-
-  buf_data = kmalloc(indio_dev->scan_bytes, GFP_KERNEL);
-  if (!buf_data)
-    goto done;
-
-  if (!bitmap_empty(indio_dev->active_scan_mask, indio_dev->masklength)) {
-    struct lsm9ds0_data *data = iio_priv(indio_dev);
-
-    mutex_lock(&data->lock);
-
-    mutex_unlock(&data->lock);
-  }
-
-  iio_push_to_buffers_with_timestamp(indio_dev, buf_data, iio_get_time_ns());
-  kfree(buf_data);
-
-done:
-  iio_trigger_notify_done(indio_dev->trig);
-
-  return IRQ_HANDLED;
-}*/
 
 static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   {
@@ -484,7 +457,7 @@ static int lsm9ds0_read_raw(struct iio_dev *iio_dev,
 
   switch (mask) {
   case IIO_CHAN_INFO_RAW:
-		mutex_lock(&data->lock);
+    mutex_lock(&data->lock);
     switch (channel->type) {
     case IIO_ANGL_VEL:
       err = lsm9ds0_read_measurements(data->client, 
@@ -566,7 +539,7 @@ static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
       struct iio_chan_spec const *channel,
       int val, int val2, long mask)
 {
-	struct lsm9ds0_data *data = iio_priv(indio_dev);
+  struct lsm9ds0_data *data = iio_priv(indio_dev);
   struct i2c_client *client = data->client;
   const struct sensor_fs_avl (*avl)[];
   int n, i, err;
@@ -574,7 +547,7 @@ static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
   int *scale_in_data;
 
   mutex_lock(&data->lock);
-	switch (mask) {
+  switch (mask) {
   case IIO_CHAN_INFO_SCALE:
     dev_info(&client->dev, "Vals %d %d\n", val, val2);
     switch (channel->type) {
@@ -626,15 +599,106 @@ static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
   return 0;
 }
 
+static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
+{
+  struct iio_poll_func *pf = p;
+  struct iio_dev *indio_dev = pf->indio_dev;
+  struct lsm9ds0_data *data = iio_priv(indio_dev);
+  u32 *buf_data;
+  int i, j;
+  s16 x1, y1, z1, x2, y2, z2;
+  int err;
+
+  buf_data = kmalloc(indio_dev->scan_bytes, GFP_KERNEL);
+  if (!buf_data)
+    goto done;
+
+  if (!bitmap_empty(indio_dev->active_scan_mask, indio_dev->masklength)) {
+    mutex_lock(&data->lock);
+
+    if (data->sensor_type == GYRO) {
+      err = lsm9ds0_read_measurements(data->client, 
+          LSM9DS0_OUT_X_L_G_REG, &x1, &y1, &z1);
+      if (err < 0)
+        goto done;
+    } else if (data->sensor_type == ACCEL_MAGN) {
+      err = lsm9ds0_read_measurements(data->client, 
+          LSM9DS0_OUT_X_L_A_REG, &x1, &y1, &z1);
+      if (err < 0)
+        goto done;
+      err = lsm9ds0_read_measurements(data->client, 
+          LSM9DS0_OUT_X_L_M_REG, &x2, &y2, &z2);
+      if (err < 0)
+        goto done;
+    } else 
+      goto done;
+    
+    for (i = 0, j = 0;
+         i < bitmap_weight(indio_dev->active_scan_mask, indio_dev->masklength);
+         i++, j++) {
+      j = find_next_bit(indio_dev->active_scan_mask, indio_dev->masklength, j);
+
+      if (data->sensor_type == GYRO) {
+        switch (j) {
+          case SCAN_INDEX_X:
+            buf_data[i] = x1;
+            break;
+          case SCAN_INDEX_Y:
+            buf_data[i] = y1;
+            break;
+          case SCAN_INDEX_Z:
+            buf_data[i] = z1;
+            break;
+          default:
+            break;
+        }
+      } else {
+        switch (j) {
+          case SCAN_INDEX_ACCEL_X:
+            buf_data[i] = x1;
+            break;
+          case SCAN_INDEX_ACCEL_Y:
+            buf_data[i] = y1;
+            break;
+          case SCAN_INDEX_ACCEL_Z:
+            buf_data[i] = z1;
+            break;
+          case SCAN_INDEX_MAGN_X:
+            buf_data[i] = x2;
+            break;
+          case SCAN_INDEX_MAGN_Y:
+            buf_data[i] = y2;
+            break;
+          case SCAN_INDEX_MAGN_Z:
+            buf_data[i] = z2;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    mutex_unlock(&data->lock);
+  }
+
+  iio_push_to_buffers_with_timestamp(indio_dev, buf_data, iio_get_time_ns());
+  kfree(buf_data);
+
+done:
+  iio_trigger_notify_done(indio_dev->trig);
+
+  return IRQ_HANDLED;
+}
+
 static const struct iio_info lsm9ds0_gyro_info = {
-	.attrs = &lsm9ds0_gyro_group,
+  .attrs = &lsm9ds0_gyro_group,
   .read_raw = lsm9ds0_read_raw,
   .write_raw = lsm9ds0_write_raw,
   .driver_module = THIS_MODULE,
 };
 
 static const struct iio_info lsm9ds0_accel_magn_info = {
-	.attrs = &lsm9ds0_accel_magn_group,
+  .attrs = &lsm9ds0_accel_magn_group,
   .read_raw = lsm9ds0_read_raw,
   .write_raw = lsm9ds0_write_raw,
   .driver_module = THIS_MODULE,
@@ -720,7 +784,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
 {
   struct iio_dev *indio_dev;
   struct lsm9ds0_data *data;
-  //struct iio_buffer *buffer;
+  struct iio_buffer *buffer;
   int sensor_type;
   int ret;
 
@@ -763,6 +827,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
   indio_dev->name = dev_name(&client->dev);
   indio_dev->modes = INDIO_DIRECT_MODE;
 
+
   if (sensor_type == GYRO) {
     ret = lsm9ds0_gyro_init(client);
     indio_dev->info = &lsm9ds0_gyro_info;
@@ -774,16 +839,38 @@ static int lsm9ds0_probe(struct i2c_client *client,
     indio_dev->channels = lsm9ds0_accel_magn_channels;
     indio_dev->num_channels = ARRAY_SIZE(lsm9ds0_accel_magn_channels);
   }
-
   if (ret < 0)
     goto error_free_device;
+
+  buffer = iio_kfifo_allocate();
+  if (!buffer) {
+    ret = -ENOMEM;
+    goto error_free_device;
+  }
+  iio_device_attach_buffer(indio_dev, buffer);
+  buffer->scan_timestamp = true;
+  indio_dev->setup_ops = &lsm9ds0_buffer_setup_ops;
+  indio_dev->pollfunc = iio_alloc_pollfunc(NULL,
+             &lsm9ds0_trigger_h,
+             IRQF_ONESHOT,
+             indio_dev,
+             "lsm9ds0_consumer%d",
+             indio_dev->id);
+  if (!indio_dev->pollfunc) {
+    ret = -ENOMEM;
+    goto error_free_buffer;
+  }
 
   ret = iio_device_register(indio_dev);
   if (ret < 0)
-    goto error_free_device;
+    goto error_unconfigure_buffer;
 
   return 0;
 
+error_unconfigure_buffer:
+  iio_dealloc_pollfunc(indio_dev->pollfunc);
+error_free_buffer:
+  iio_kfifo_free(indio_dev->buffer);
 error_free_device:
   iio_device_free(indio_dev);
 error_ret:
