@@ -542,7 +542,7 @@ static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
   struct lsm9ds0_data *data = iio_priv(indio_dev);
   struct i2c_client *client = data->client;
   const struct sensor_fs_avl (*avl)[];
-  int n, i, err;
+  int n, i, ret;
   u8 reg_address, reg_mask, new_value;
   int *scale_in_data;
 
@@ -573,30 +573,33 @@ static int lsm9ds0_write_raw(struct iio_dev *indio_dev,
       scale_in_data = &(data->magn_scale);
       break;
     default:
-      return -EINVAL;
+      ret = -EINVAL;
+      goto done;
     }
-    err = -EINVAL;
+    ret = -EINVAL;
     for (i = 0; i < n; i++) {
       if ((*avl)[i].gain == val2) {
-        err = 0;
+        ret = 0;
         new_value = (*avl)[i].value;
         break;
       }
     }
-    if (err < 0)
-      return err;
+    if (ret < 0)
+      goto done;
 
-    err = lsm9ds0_write_config(client, reg_address, reg_mask, new_value);
-    if (err < 0)
-      return err;
+    ret = lsm9ds0_write_config(client, reg_address, reg_mask, new_value);
+    if (ret < 0)
+      goto done;
 
     *scale_in_data = (*avl)[i].gain;
     break;
   default:
-    return -EINVAL;
+    ret = -EINVAL;
   }
+
+done:
   mutex_unlock(&data->lock);
-  return 0;
+  return ret;
 }
 
 static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
