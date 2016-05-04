@@ -140,7 +140,7 @@ static int __init iio_trig_timer_init(void)
   /* RTC access */
   iio_trig_timer->rtc = rtc_class_open("rtc0");
   if (!iio_trig_timer->rtc) {
-    printk(KERN_ERR "Device rtc0 is missing.\n");
+    dev_err(&trig->dev, "Device rtc0 wasn't found.\n");
     ret = -EINVAL;
     goto error_free_trig;
   }
@@ -155,7 +155,7 @@ static int __init iio_trig_timer_init(void)
   if (ret)
     goto error_unregister_rtc_irq;
 
-  printk(KERN_INFO "ok\n");
+  dev_info(&trig->dev, "Registered and disabled.\n");
   return 0;
 
 error_unregister_rtc_irq:
