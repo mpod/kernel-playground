@@ -613,25 +613,25 @@ static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
   if (!buf_data)
     goto done;
 
+  mutex_lock(&data->lock);
   if (!bitmap_empty(indio_dev->active_scan_mask, indio_dev->masklength)) {
-    mutex_lock(&data->lock);
 
     if (data->sensor_type == GYRO) {
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_G_REG, &x1, &y1, &z1);
       if (err < 0)
-        goto done;
+        goto free_buf;
     } else if (data->sensor_type == ACCEL_MAGN) {
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_A_REG, &x1, &y1, &z1);
       if (err < 0)
-        goto done;
+        goto free_buf;
       err = lsm9ds0_read_measurements(data->client, 
           LSM9DS0_OUT_X_L_M_REG, &x2, &y2, &z2);
       if (err < 0)
-        goto done;
+        goto free_buf;
     } else 
-      goto done;
+      goto free_buf;
     
     for (i = 0, j = 0;
          i < bitmap_weight(indio_dev->active_scan_mask, indio_dev->masklength);
@@ -678,11 +678,13 @@ static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
       }
     }
 
-    mutex_unlock(&data->lock);
   }
 
   iio_push_to_buffers_with_timestamp(indio_dev, buf_data, iio_get_time_ns());
+
+free_buf:
   kfree(buf_data);
+  mutex_unlock(&data->lock);
 
 done:
   iio_trigger_notify_done(indio_dev->trig);
