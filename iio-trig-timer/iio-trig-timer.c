@@ -30,27 +30,27 @@
 #include <linux/iio/trigger.h>
 
 struct iio_trig_timer_info {
-	struct iio_trigger *trig;
-	struct rtc_device *rtc;
-	struct irq_work work;
-	unsigned int frequency;
-	struct rtc_task task;
-	bool state;
+  struct iio_trigger *trig;
+  struct rtc_device *rtc;
+  struct irq_work work;
+  unsigned int frequency;
+  struct rtc_task task;
+  bool state;
 };
 
 static struct iio_trig_timer_info *iio_trig_timer;
 
 static struct attribute *iio_trig_timer_attrs[] = {
-	NULL,
+  NULL,
 };
 
 static const struct attribute_group iio_trig_timer_group = {
-	.attrs = iio_trig_timer_attrs,
+  .attrs = iio_trig_timer_attrs,
 };
 
 static const struct attribute_group *iio_trig_timer_groups[] = {
-	&iio_trig_timer_group,
-	NULL
+  &iio_trig_timer_group,
+  NULL
 };
 
 /* Nothing to actually do upon release */
@@ -60,12 +60,12 @@ static void iio_trig_timer_release(struct device *dev)
 
 static void iio_rtc_trigger_poll(void *private_data)
 {
-	iio_trigger_poll(private_data);
+  iio_trigger_poll(private_data);
   printk(KERN_INFO "trigger\n");
 }
 
 static const struct iio_trigger_ops iio_trig_timer_ops = {
-	.owner = THIS_MODULE,
+  .owner = THIS_MODULE,
 };
 
 static int __init iio_trig_timer_init(void)
@@ -73,23 +73,23 @@ static int __init iio_trig_timer_init(void)
   struct iio_trigger *trig;
   int ret;
   
-	iio_trig_timer = kmalloc(sizeof(*iio_trig_timer), GFP_KERNEL);
-	if (iio_trig_timer == NULL) {
-		ret = -ENOMEM;
-		goto error_free_trig_timer;
-	}
+  iio_trig_timer = kmalloc(sizeof(*iio_trig_timer), GFP_KERNEL);
+  if (iio_trig_timer == NULL) {
+    ret = -ENOMEM;
+    goto error_free_trig_timer;
+  }
 
-	trig = iio_trigger_alloc("timertrig");
-	if (!trig) {
-		ret = -ENOMEM;
-		goto error_free_trig;
-	}
+  trig = iio_trigger_alloc("timertrig");
+  if (!trig) {
+    ret = -ENOMEM;
+    goto error_free_trig;
+  }
   iio_trig_timer->trig = trig;
   trig->dev.bus = &iio_bus_type;
-	trig->dev.groups = iio_trig_timer_groups;
+  trig->dev.groups = iio_trig_timer_groups;
   trig->dev.release = &iio_trig_timer_release;
-	trig->ops = &iio_trig_timer_ops;
-	iio_trigger_set_drvdata(trig, iio_trig_timer);
+  trig->ops = &iio_trig_timer_ops;
+  iio_trigger_set_drvdata(trig, iio_trig_timer);
 
   /* RTC access */
   iio_trig_timer->rtc = rtc_class_open("rtc0");
@@ -109,22 +109,22 @@ static int __init iio_trig_timer_init(void)
   if (ret < 0)
     goto error_unregister_rtc_irq;
 
-	ret = iio_trigger_register(trig);
-	if (ret)
-		goto error_unregister_rtc_irq;
+  ret = iio_trigger_register(trig);
+  if (ret)
+    goto error_unregister_rtc_irq;
 
   printk(KERN_INFO "ok\n");
   return 0;
 
 error_unregister_rtc_irq:
-	rtc_irq_unregister(iio_trig_timer->rtc, &iio_trig_timer->task);
+  rtc_irq_unregister(iio_trig_timer->rtc, &iio_trig_timer->task);
 error_close_rtc:
-	rtc_class_close(iio_trig_timer->rtc);
-	iio_trigger_put(trig);
+  rtc_class_close(iio_trig_timer->rtc);
+  iio_trigger_put(trig);
 error_free_trig:
-	kfree(iio_trig_timer);
+  kfree(iio_trig_timer);
 error_free_trig_timer:
-	return ret;
+  return ret;
 }
 module_init(iio_trig_timer_init);
 
@@ -132,9 +132,9 @@ static void __exit iio_trig_timer_exit(void)
 {
   rtc_irq_unregister(iio_trig_timer->rtc, &iio_trig_timer->task);
   rtc_class_close(iio_trig_timer->rtc);
-	iio_trigger_unregister(iio_trig_timer->trig);
-	iio_trigger_free(iio_trig_timer->trig);
-	kfree(iio_trig_timer);
+  iio_trigger_unregister(iio_trig_timer->trig);
+  iio_trigger_free(iio_trig_timer->trig);
+  kfree(iio_trig_timer);
   printk(KERN_INFO "removed\n");
 }
 module_exit(iio_trig_timer_exit);
