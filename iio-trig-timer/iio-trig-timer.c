@@ -40,7 +40,53 @@ struct iio_trig_timer_info {
 
 static struct iio_trig_timer_info *iio_trig_timer;
 
+static ssize_t iio_trig_timer_read_freq(struct device *dev,
+   struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", iio_trig_timer->frequency);
+}
+
+static ssize_t iio_trig_timer_write_freq(struct device *dev,
+    struct device_attribute *attr, const char *buf, size_t len)
+{
+  unsigned int val;
+	int ret;
+
+	ret = kstrtouint(buf, 10, &val);
+	if (ret)
+		goto error_ret;
+
+	if (val > 0) {
+		ret = rtc_irq_set_state(iio_trig_timer->rtc, &iio_trig_timer->task, 0);
+    if (ret < 0)
+      goto error_ret;
+		ret = rtc_irq_set_freq(iio_trig_timer->rtc, &iio_trig_timer->task, val);
+    if (ret < 0)
+      goto error_ret;
+    ret = rtc_irq_set_state(iio_trig_timer->rtc, &iio_trig_timer->task, 1);
+    if (ret < 0)
+      goto error_ret;
+	} else {
+		ret = rtc_irq_set_state(iio_trig_timer->rtc, &iio_trig_timer->task, 0);
+    if (ret < 0)
+      goto error_ret;
+    val = 0;
+  }
+
+	iio_trig_timer->frequency = val;
+
+	return len;
+
+error_ret:
+	return ret;
+}
+
+static DEVICE_ATTR(frequency, S_IRUGO | S_IWUSR,
+      iio_trig_timer_read_freq,
+      iio_trig_timer_write_freq);
+
 static struct attribute *iio_trig_timer_attrs[] = {
+  &dev_attr_frequency.attr,
   NULL,
 };
 
@@ -94,6 +140,7 @@ static int __init iio_trig_timer_init(void)
   /* RTC access */
   iio_trig_timer->rtc = rtc_class_open("rtc0");
   if (!iio_trig_timer->rtc) {
+    printk(KERN_ERR "Device rtc0 is missing.\n");
     ret = -EINVAL;
     goto error_free_trig;
   }
@@ -102,12 +149,7 @@ static int __init iio_trig_timer_init(void)
   ret = rtc_irq_register(iio_trig_timer->rtc, &iio_trig_timer->task);
   if (ret < 0)
     goto error_close_rtc;
-  ret = rtc_irq_set_freq(iio_trig_timer->rtc, &iio_trig_timer->task, 1);
-  if (ret < 0)
-    goto error_unregister_rtc_irq;
-  ret = rtc_irq_set_state(iio_trig_timer->rtc, &iio_trig_timer->task, 1);
-  if (ret < 0)
-    goto error_unregister_rtc_irq;
+  iio_trig_timer->frequency = 0;
 
   ret = iio_trigger_register(trig);
   if (ret)
