@@ -60,6 +60,7 @@ static void iio_trig_timer_release(struct device *dev)
 
 static void iio_rtc_trigger_poll(void *private_data)
 {
+	iio_trigger_poll(private_data);
   printk(KERN_INFO "trigger\n");
 }
 
@@ -75,13 +76,13 @@ static int __init iio_trig_timer_init(void)
 	iio_trig_timer = kmalloc(sizeof(*iio_trig_timer), GFP_KERNEL);
 	if (iio_trig_timer == NULL) {
 		ret = -ENOMEM;
-		goto out1;
+		goto error_free_trig_timer;
 	}
 
 	trig = iio_trigger_alloc("timertrig");
 	if (!trig) {
 		ret = -ENOMEM;
-		goto free_t;
+		goto error_free_trig;
 	}
   iio_trig_timer->trig = trig;
   trig->dev.bus = &iio_bus_type;
@@ -94,16 +95,19 @@ static int __init iio_trig_timer_init(void)
   iio_trig_timer->rtc = rtc_class_open("rtc0");
   if (!iio_trig_timer->rtc) {
     ret = -EINVAL;
-    goto free_t;
+    goto error_free_trig;
   }
   iio_trig_timer->task.func = iio_rtc_trigger_poll;
   iio_trig_timer->task.private_data = trig;
   ret = rtc_irq_register(iio_trig_timer->rtc, &iio_trig_timer->task);
-  if (ret)
+  if (ret < 0)
     goto error_close_rtc;
-  ret = rtc_irq_set_freq(iio_trig_timer->rtc, &iio_trig_timer->task, 2);
-  //if (ret == 0 && iio_trig_timer->state && iio_trig_timer->frequency == 0)
+  ret = rtc_irq_set_freq(iio_trig_timer->rtc, &iio_trig_timer->task, 1);
+  if (ret < 0)
+    goto error_unregister_rtc_irq;
   ret = rtc_irq_set_state(iio_trig_timer->rtc, &iio_trig_timer->task, 1);
+  if (ret < 0)
+    goto error_unregister_rtc_irq;
 
 	ret = iio_trigger_register(trig);
 	if (ret)
@@ -116,19 +120,18 @@ error_unregister_rtc_irq:
 	rtc_irq_unregister(iio_trig_timer->rtc, &iio_trig_timer->task);
 error_close_rtc:
 	rtc_class_close(iio_trig_timer->rtc);
-  printk(KERN_INFO "out2\n");
 	iio_trigger_put(trig);
-free_t:
-  printk(KERN_INFO "free_t\n");
+error_free_trig:
 	kfree(iio_trig_timer);
-out1:
-  printk(KERN_INFO "out1\n");
+error_free_trig_timer:
 	return ret;
 }
 module_init(iio_trig_timer_init);
 
 static void __exit iio_trig_timer_exit(void)
 {
+  rtc_irq_unregister(iio_trig_timer->rtc, &iio_trig_timer->task);
+  rtc_class_close(iio_trig_timer->rtc);
 	iio_trigger_unregister(iio_trig_timer->trig);
 	iio_trigger_free(iio_trig_timer->trig);
 	kfree(iio_trig_timer);

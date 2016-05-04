@@ -825,7 +825,7 @@ static int lsm9ds0_probe(struct i2c_client *client,
 
   indio_dev->dev.parent = &client->dev;
   indio_dev->name = dev_name(&client->dev);
-  indio_dev->modes = INDIO_DIRECT_MODE;
+  indio_dev->modes = INDIO_DIRECT_MODE | INDIO_BUFFER_TRIGGERED;
 
 
   if (sensor_type == GYRO) {
