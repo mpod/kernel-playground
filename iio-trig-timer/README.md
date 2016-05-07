@@ -77,7 +77,8 @@ $ dmesg | tail -1
 
 Module by default set frequency to `0` which basically means that trigger is 
 disabled. To enable a trigger it is needed to set frequency to some positive 
-number of Hz.
+number. For example, to set trigger to produce events at frequency of 5Hz 
+execute:
 
 ```
 $ su - -c "echo 5 > /sys/bus/iio/devices/trigger0/frequency"
