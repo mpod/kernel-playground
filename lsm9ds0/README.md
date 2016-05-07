@@ -52,8 +52,8 @@ drivers/iio/industrialio.ko
 drivers/iio/kfifo_buf.ko
 ```
 
-Connect to the Raspberry Pi. Linux kernel should be first informed that LSM9DS0 
-chip is connected to I2C bus. 
+Connect to the Raspberry Pi. Linux kernel should be first informed that 
+`LSM9DS0` chip is connected to I2C bus. 
 
 ```
 $ su - -c "echo lsm9ds0_accel_magn 0x1d > /sys/bus/i2c/devices/i2c-1/new_devicew_device"
@@ -68,7 +68,8 @@ $ sudo insmod kfifo_buf.ko
 $ sudo insmod lsm9ds0.ko
 ```
 
-If everything went ok `dmesg | tail -4` command should return output like this:
+If everything went ok then `dmesg | tail -4` command should return output like 
+this:
 
 ```
 $ dmesg | tail -4
