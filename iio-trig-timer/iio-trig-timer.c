@@ -72,9 +72,7 @@ static ssize_t iio_trig_timer_write_freq(struct device *dev,
       goto error_ret;
     val = 0;
   }
-
   iio_trig_timer->frequency = val;
-
   return len;
 
 error_ret:
