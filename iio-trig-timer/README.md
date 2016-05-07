@@ -87,4 +87,4 @@ $ su - -c "echo 5 > /sys/bus/iio/devices/trigger0/frequency"
 Next step is to connect `IIO` driver to this trigger. For details about this 
 procedure read chapter [Buffers and 
 trigger](https://github.com/mpod/kernel-playground#buffers-and-triggers) in 
-documentation of BMP280 driver.
+documentation of `BMP280` driver.
