@@ -90,6 +90,7 @@ iio:device0  iio:device1
 ```
 One directory implements gyroscope interface, while other directory implements 
 accelerometer and magnetometer interface. To get the latest measurements from 
-gyroscope sensor read `in_anglvel_{x|y|z}_raw}` files, for accelerometer read 
-`in_accel_{x|y|z}_raw`, while for magnetometer read `in_magn_{x|y|z}_raw` files.
+gyroscope sensor read `in_anglvel_{x|y|z}_raw}` files, for accelerometer 
+measurements read `in_accel_{x|y|z}_raw`, while for magnetometer measurements 
+read `in_magn_{x|y|z}_raw` files.
 
