@@ -17,8 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * 
- *
+ * Driver for ST LSM9DS0 gyroscope, accelerometer, and magnetometer sensor. 
  *
  */
 
@@ -909,5 +908,5 @@ static struct i2c_driver lsm9ds0_driver = {
 module_i2c_driver(lsm9ds0_driver);
 
 MODULE_AUTHOR("Matija Podravec <matija_podravec@fastmail.fm>");
-MODULE_DESCRIPTION("LSM9DS0 gyroscope sensor");
+MODULE_DESCRIPTION("LSM9DS0 gyroscope, accelerometer, and magnetometer sensor");
 MODULE_LICENSE("GPL");
