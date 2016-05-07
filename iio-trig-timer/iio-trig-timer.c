@@ -16,9 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *
- * 
- *
+ * RTC timer triger for iio subsystem.
  *
  */
 #include <linux/kernel.h>
@@ -153,7 +151,7 @@ static int __init iio_trig_timer_init(void)
   if (ret)
     goto error_unregister_rtc_irq;
 
-  dev_info(&trig->dev, "Registered and disabled.\n");
+  dev_info(&trig->dev, "Registered successfully.\n");
   return 0;
 
 error_unregister_rtc_irq:
@@ -180,5 +178,5 @@ static void __exit iio_trig_timer_exit(void)
 module_exit(iio_trig_timer_exit);
 
 MODULE_AUTHOR("Matija Podravec <matija_podravec@fastmail.fm>");
-MODULE_DESCRIPTION("Timer based trigger for the iio subsystem");
+MODULE_DESCRIPTION("RTC timer trigger for the iio subsystem");
 MODULE_LICENSE("GPL");
