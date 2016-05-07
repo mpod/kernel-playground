@@ -52,15 +52,12 @@ drivers/iio/industrialio.ko
 drivers/iio/kfifo_buf.ko
 ```
 
-
-## Usage ##
-
 Connect to the Raspberry Pi. Linux kernel should be first informed that LSM9DS0 
 chip is connected to I2C bus. 
 
 ```
 $ su - -c "echo lsm9ds0_accel_magn 0x1d > /sys/bus/i2c/devices/i2c-1/new_devicew_device"
-# su - -c "echo lsm9ds0_gyro 0x6b > /sys/bus/i2c/devices/i2c-1/new_device"
+$ su - -c "echo lsm9ds0_gyro 0x6b > /sys/bus/i2c/devices/i2c-1/new_device"
 ```
 
 Locate directory with kernel modules and execute.
@@ -71,16 +68,25 @@ $ sudo insmod kfifo_buf.ko
 $ sudo insmod lsm9ds0.ko
 ```
 
-If everything went ok `dmesg | tail -4` command should return output like:
+If everything went ok `dmesg | tail -4` command should return output like this:
 
 ```
-pi@raspberrypi:~/lkm $ dmesg | tail -4
+$ dmesg | tail -4
 [168008.825324] i2c i2c-1: new_device: Instantiated device lsm9ds0_gyro at 0x6b
 [168030.604269] i2c i2c-1: new_device: Instantiated device lsm9ds0_accel_magn at 0x1d
 [168058.096510] lsm9ds0 1-006b: Gyroscope found.
 [168058.100451] lsm9ds0 1-001d: Accelerometer and magnetometer found.
 ```
 
+## Usage ##
+
+`LSM9DS0` driver creates two directories under `/sys/bus/iio/devices/` 
+directory. 
+
+```
+$ ls /sys/bus/iio/devices
+iio:device0  iio:device1
+```
 
 
 

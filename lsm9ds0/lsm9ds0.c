@@ -292,7 +292,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   {
     .type = IIO_ANGL_VEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_X,
     .scan_index = SCAN_INDEX_X,
@@ -306,7 +306,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   }, {
     .type = IIO_ANGL_VEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Y,
     .scan_index = SCAN_INDEX_Y,
@@ -320,7 +320,7 @@ static const struct iio_chan_spec lsm9ds0_gyro_channels[] = {
   }, {
     .type = IIO_ANGL_VEL,
     .info_mask_separate = BIT(IIO_CHAN_INFO_RAW), 
-    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SAMP_FREQ), 
+    .info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), 
     .modified = 1,
     .channel2 = IIO_MOD_Z,
     .scan_index = SCAN_INDEX_Z,
