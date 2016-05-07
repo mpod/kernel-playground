@@ -8,8 +8,8 @@ digital angular rate sensor, and a 3D digital magnetic sensor.
 
 First make sure that directory of `arm-none-eabi-` toolchain is added to `PATH` 
 environment variable. Second, place Raspbian Linux kernel source code in 
-directory `../../linux-raspi` related to `lsm9ds0` directory. To compile driver 
-run:
+`../../linux-raspi` directory relatively to `lsm9ds0` directory. To compile 
+driver run:
 
 ```
 $ cd lsm9ds0
