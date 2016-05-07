@@ -1,4 +1,4 @@
-## LSM9DS0 gyroscope, accelerometer, and magnetometer ##
+# LSM9DS0 gyroscope, accelerometer, and magnetometer #
 
 The [LSM9DS0](http://www.st.com/web/catalog/sense_power/FM89/SC1448/PF258556) is 
 a system-in-package featuring a 3D digital linear acceleration sensor, a 3D 
