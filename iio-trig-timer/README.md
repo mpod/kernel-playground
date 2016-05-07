@@ -1,9 +1,9 @@
 ## RTC triger for IIO subsystem ##
 
-This kernel module adds a `IIO` trigger that creates events at defined 
-frequency. It depends on `RTC` device under `/dev/rtc0` name. `IIO` drivers can 
-use this trigger to write measurements into corresponding ring buffer at certain 
-frequency. 
+This kernel module adds an `IIO` trigger that creates events at defined 
+frequency. It depends on real time clock device under `/dev/rtc0` name. `IIO` 
+drivers can use this trigger to write measurements into corresponding ring 
+buffer at certain frequency. 
 
 ## Installation ##
 
@@ -30,7 +30,7 @@ $ cd ../../linux-raspi
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig
 ```
 
-Select `Industrial I/O support` options.
+Select `Industrial I/O support` and `Real Time Clock` options.
 
 ```
 Device Drivers --->
@@ -44,7 +44,7 @@ Device Drivers --->
         <M> Test driver/device
 ```
 
-And compile modules.
+Compile modules.
 
 ```
 $ make -j 4 -k ARCH=arm CROSS_COMPILE=arm-none-eabi- modules
@@ -75,4 +75,15 @@ $ dmesg | tail -1
 
 ## Usage ##
 
+Module by default set frequency to `0` which basically means that trigger is 
+disabled. To enable a trigger it is needed to set frequency to some positive 
+number of Hz.
 
+```
+$ su - -c "echo 5 > /sys/bus/iio/devices/trigger0/frequency"
+``` 
+
+Next step is to connect `IIO` driver to this trigger. For details about the 
+procedure read chapter [Buffers and 
+trigger](https://github.com/mpod/kernel-playground#buffers-and-triggers) in 
+documentation of BMP280 driver.
