@@ -3,7 +3,7 @@
 The BMP280 is an absolute barometric pressure sensor especially designed for 
 mobile applications. 
 
-## Inspecting BMP280 sensor from user space ##
+## Inspecting BMP280 sensor using i2c-tools ##
 
 Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
 from command line. Those tools reguire I2C kernel support which can be enabled 
