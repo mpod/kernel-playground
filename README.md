@@ -4,8 +4,8 @@ This repository contains experiments related to Linux kernel and Raspberry Pi.
 
 ## Contents ##
 
-* [Setting up development environment](https://github.com/mpod/kernel-playground#setting-up-development-environment)
 * [Driver for BMP280 barometric pressure sensor](https://github.com/mpod/kernel-playground/tree/master/bmp280)
+    * [Setting up development environment](https://github.com/mpod/kernel-playground/tree/master/bmp280#setting-up-development-environment)
     * [Inspecting BMP280 sensor using i2c-tools](https://github.com/mpod/kernel-playground/tree/master/bmp280#inspecting-bmp280-sensor-using-i2c-tools)
     * [IIO buffers and triggers](https://github.com/mpod/kernel-playground/tree/master/bmp280#iio-buffers-and-triggers)
 * [Driver for LSM9DS0 accelerometer, magnetometer, and gyroscope](https://github.com/mpod/kernel-playground/tree/master/lsm9ds0)
