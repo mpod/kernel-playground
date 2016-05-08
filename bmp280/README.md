@@ -7,7 +7,8 @@ mobile applications.
 
 Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
 from command line. Those tools reguire I2C kernel support which can be enabled 
-from `raspi-config`. After rebooting Raspberry Pi install `i2c-tools` with:
+from `raspi-config`. After selecting appropriate options and rebooting Raspberry 
+Pi install `i2c-tools` with:
 
 ```
 $ sudo apt-get install i2c-tools
@@ -17,7 +18,7 @@ Run `i2cdetect` tool to scan I2C bus for devices. Following command scans I2C
 bus `1`. 
 
 ```
-pi@raspberrypi:~ $ i2cdetect -y 1
+$ i2cdetect -y 1
      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
 00:          -- -- -- -- -- -- -- -- -- -- -- -- -- 
 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
@@ -34,7 +35,7 @@ address `0x77`.  Program `i2cdump` can be used for reading registers of the I2C
 device at that address. 
 
 ```
-pi@raspberrypi:~ $ i2cdump -y 1 0x77
+$ i2cdump -y 1 0x77
 No size specified (using byte-data access)
      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
 00: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX    XXXXXXXXXXXXXXXX
@@ -63,8 +64,8 @@ visible that device is in sleep mode, because bits `0`, and `1` of register
 `0xF4` are not set. Execute following commands to put sensor in normal mode.
 
 ```
-pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF4 0x57
-pi@raspberrypi:~ $ i2cset -y 1 0x77 0xF5 0x90
+$ i2cset -y 1 0x77 0xF4 0x57
+$ i2cset -y 1 0x77 0xF5 0x90
 ```
 
 Sensor in normal mode periodically cycles between standby and measurement 
