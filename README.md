@@ -7,6 +7,7 @@ different kinds of sensors.
 
 * [Driver for BMP280 barometric pressure sensor](https://github.com/mpod/kernel-playground/tree/master/bmp280)
     * [Inspecting BMP280 sensor using i2c-tools](https://github.com/mpod/kernel-playground/tree/master/bmp280#inspecting-bmp280-sensor-using-i2c-tools)
+    * [IIO buffers and triggers](https://github.com/mpod/kernel-playground/tree/master/bmp280#iio-buffers-and-triggers)
 * [Driver for LSM9DS0 accelerometer, magnetometer, and gyroscope](https://github.com/mpod/kernel-playground/tree/master/lsm9ds0)
 * [RTC triger for IIO subsystem](https://github.com/mpod/kernel-playground/tree/master/iio-trig-timer)
 
