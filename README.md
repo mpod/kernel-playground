@@ -36,3 +36,6 @@ Questions](http://www.esacademy.com/en/library/technical-articles-and-documents/
       Sensors](https://www.overleaf.com/articles/industrial-i-slash-o/dmqjqpzswtvb/viewer.pdf)
     * [drivers/stagging/iio/Documentation](https://github.com/raspberrypi/linux/tree/rpi-4.1.y/drivers/staging/iio/Documentation) 
       files in the kernel tree.
+* Sensors
+    * [BMP280](https://www.bosch-sensortec.com/bst/products/all_products/bmp280)
+    * [LSM9DS0](http://www.st.com/web/catalog/sense_power/FM89/SC1448/PF258556#)
