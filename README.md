@@ -15,24 +15,30 @@ This repository contains experiments related to Linux kernel and Raspberry Pi.
 
 ## Setting up development environment ##
 
-The Linux kernel header files should be available for building driver code. One 
-way to achieve this is to download and use Linux kernel source code. Since the 
-driver is going to be used on Rasperry Pi, it is recommended to use Raspbian 
-version of Linux kernel. Clone Linux kernel source code. 
+It is recommended to use cross compiler for building examples from this 
+repository. Makefiles are configured for `arm-none-eabi-` toolchain which can be 
+downloaded from 
+[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/).  
+It is important to add `bin` directory of cross compiler to `PATH` environment 
+variable. 
+
+Makefiles also assume that Linux kernel source code is available at relative 
+location `../../linux-raspi`. Since the kernel modules are implemented for 
+Raspberry Pi, it is recommended to use Raspbian version of Linux kernel. Clone 
+Linux kernel source code with:
 
 ```
 $ git clone https://github.com/raspberrypi/linux linux-raspi
 ```
 
-It is recommended to clone kernel files to `linux-raspi` directory because 
-driver's `Makefile` is set to search for header files in `../../linux-raspi`. 
-Next step is to checkout kernel files to the same kernel version used on 
-Raspberry Pi. Find kernel version on Raspberry Pi.
+Next step is to checkout kernel files to the kernel version used on Raspberry 
+Pi. To find kernel version run following command from Raspberry Pi:
 
 ```
-pi@raspberrypi:~ $ uname -a
+$ uname -a
 Linux raspberrypi 4.1.17-v7+ #838 SMP Tue Feb 9 13:15:09 GMT 2016 armv7l GNU/Linux
 ```
+
 In my case version `4.1.17` is used. To find right commit in git history run 
 `git log` command and search for `4.1.17` string.
 
@@ -50,8 +56,9 @@ $ git log --oneline --decorate --graph --all
 | | | | * d17367a recordmcount: Fix endianness handling bug for nop_mcount
 ...
 ```
+
 From git log is visible that commit `6330c27` is a merge of Raspbian branch and 
-Linux kernel version `4.1.17`. Checkout commit `6330c27`.
+Linux kernel version `4.1.17`. That means we need to checkout commit `6330c27`.
 
 ```
 $ git checkout 6330c27
