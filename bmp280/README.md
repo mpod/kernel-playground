@@ -56,10 +56,10 @@ e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
 f0: 00 00 00 00 00 00 00 80 00 00 80 00 00 00 00 00    .......?..?.....
 ```
 
-Value `0x58` at address `0xD0` is interesting. In [BMP280 
+Value `0x58` at address `0xD0` is interesting. From [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf) 
-is written that register at address `0xD0` contains chip id of value `0x58`. 
-This confirms that device at address `0x77` is indeed BMP280 sensor. It is also 
+we know that register at address `0xD0` contains chip id of value `0x58`. In 
+other words, device at address `0x77` is indeed BMP280 sensor.  It is also 
 visible that device is in sleep mode, because bits `0`, and `1` of register 
 `0xF4` are not set. Execute following commands to put sensor in normal mode.
 
