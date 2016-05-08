@@ -202,7 +202,8 @@ To create an actual trigger execute following command.
 ```
 $ su -
 password:
-# echo 1 > /sys/bus/iio/devices/iio_sysfs_trigger/add_trigger ```
+# echo 1 > /sys/bus/iio/devices/iio_sysfs_trigger/add_trigger 
+```
 
 Result is a new entry `trigger0` in `/sys/bus/iio/devices` directory.
 
