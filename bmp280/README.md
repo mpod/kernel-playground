@@ -3,57 +3,6 @@
 The BMP280 is an absolute barometric pressure sensor especially designed for 
 mobile applications. 
 
-## Setting up development environment ##
-
-It is recommended to use cross compiler for building examples from this 
-repository. Makefiles are configured for `arm-none-eabi-` toolchain which can be 
-downloaded from 
-[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
-It is important to add `bin` directory of cross compiler to `PATH` environment 
-variable. 
-
-Makefiles also assume that Linux kernel source code is available at relative 
-location `../../linux-raspi`. Since the kernel modules are implemented for 
-Raspberry Pi, it is recommended to use Raspbian version of Linux kernel. Clone 
-Linux kernel source code with:
-
-```
-$ git clone https://github.com/raspberrypi/linux linux-raspi
-```
-
-Next step is to checkout kernel files to the kernel version used on Raspberry 
-Pi. To find kernel version run following command from Raspberry Pi:
-
-```
-$ uname -a
-Linux raspberrypi 4.1.17-v7+ #838 SMP Tue Feb 9 13:15:09 GMT 2016 armv7l GNU/Linux
-```
-
-In my case version `4.1.17` is used. To find right commit in git history run 
-`git log` command and search for `4.1.17` string.
-
-```
-$ cd linux-raspi
-$ git log --oneline --decorate --graph --all
-...
-| | | * | | cd14299 BCM270X_DT: Adjust overlay README formatting
-| | | |/ /  
-| | | * | 0108373 Revert "bcm270x_dt: Use the sdhost MMC controller by default"
-| | | * |   6330c27 (HEAD, tag: rpi-bootloader-1.20160202-1) Merge remote-tracking branch 'stable/linux-4.1.y' into rpi-4.1.y
-| | | |\ \  
-| | | | |/  
-| | | | * 2d5f6b0 Linux 4.1.17
-| | | | * d17367a recordmcount: Fix endianness handling bug for nop_mcount
-...
-```
-
-From git log is visible that commit `6330c27` is a merge of Raspbian branch and 
-Linux kernel version `4.1.17`. That means we need to checkout commit `6330c27`.
-
-```
-$ git checkout 6330c27
-```
-
 ## Inspecting BMP280 sensor using i2c-tools ##
 
 Tools from `i2c-tools` package can be used for easy debugging of I2C devices 
@@ -124,6 +73,57 @@ periods. Measurements are stored in registries from `0xF7` to `0xFC`. Subsequent
 runs of `i2cdump` show that values in those registries are changing over time. 
 More information about BMP280 registries can be found in [BMP280 
 documentation](https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP280-DS001-12.pdf).
+
+## Setting up development environment ##
+
+It is recommended to use cross compiler for building examples from this 
+repository. Makefiles are configured for `arm-none-eabi-` toolchain which can be 
+downloaded from 
+[here](https://learn.adafruit.com/adafruit-bmp280-barometric-pressure-plus-temperature-sensor-breakout/). 
+It is important to add `bin` directory of cross compiler to `PATH` environment 
+variable. 
+
+Makefiles also assume that Linux kernel source code is available at relative 
+location `../../linux-raspi`. Since the kernel modules are implemented for 
+Raspberry Pi, it is recommended to use Raspbian version of Linux kernel. Clone 
+Linux kernel source code with:
+
+```
+$ git clone https://github.com/raspberrypi/linux linux-raspi
+```
+
+Next step is to checkout kernel files to the kernel version used on Raspberry 
+Pi. To find kernel version run following command from Raspberry Pi:
+
+```
+$ uname -a
+Linux raspberrypi 4.1.17-v7+ #838 SMP Tue Feb 9 13:15:09 GMT 2016 armv7l GNU/Linux
+```
+
+In my case version `4.1.17` is used. To find right commit in git history run 
+`git log` command and search for `4.1.17` string.
+
+```
+$ cd linux-raspi
+$ git log --oneline --decorate --graph --all
+...
+| | | * | | cd14299 BCM270X_DT: Adjust overlay README formatting
+| | | |/ /  
+| | | * | 0108373 Revert "bcm270x_dt: Use the sdhost MMC controller by default"
+| | | * |   6330c27 (HEAD, tag: rpi-bootloader-1.20160202-1) Merge remote-tracking branch 'stable/linux-4.1.y' into rpi-4.1.y
+| | | |\ \  
+| | | | |/  
+| | | | * 2d5f6b0 Linux 4.1.17
+| | | | * d17367a recordmcount: Fix endianness handling bug for nop_mcount
+...
+```
+
+From git log is visible that commit `6330c27` is a merge of Raspbian branch and 
+Linux kernel version `4.1.17`. That means we need to checkout commit `6330c27`.
+
+```
+$ git checkout 6330c27
+```
 
 ## Installation ##
 
