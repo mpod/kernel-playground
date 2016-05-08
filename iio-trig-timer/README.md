@@ -10,7 +10,7 @@ buffer at certain frequency.
 First make sure that directory of `arm-none-eabi-` toolchain is added to `PATH` 
 environment variable. Second, place Raspbian Linux kernel source code in 
 `../../linux-raspi` directory relatively to `iio-trig-timer` directory. To 
-compile driver run:
+compile a driver run:
 
 ```
 $ cd iio-trig-timer
