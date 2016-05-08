@@ -157,3 +157,21 @@ pi@raspberrypi:~ $ dmesg | tail -4
 [  451.541401] bmp280 1-0077: BMP280 registered.
 ```
 
+String `BMP280 registered` indicates that BMP280 driver was able to connect to 
+actual device, that it found correct chip id value, and that it loaded module 
+into Linux kernel. 
+
+## Usage ##
+
+Driver exposes pressure and temperature measurements over virtual file system. 
+
+```
+pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_pressure_input 
+99534.601562500
+pi@raspberrypi:~ $ cat /sys/bus/iio/devices/iio\:device0/in_temp_input 
+23.490000000
+```
+
+These values mean that sensor measured pressure of 99534.601 Pa and temperature 
+of 23.49 degrees Celsius. 
+
