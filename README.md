@@ -1,6 +1,9 @@
 # kernel-playground #
 
-This repository contains experiments related to Linux kernel and Raspberry Pi.
+This repository contains experiments related to Linux kernel and Raspberry Pi.  
+It demostrates how to use `i2c-tools` with `I2C` sensors, how to implement Linux 
+kernel drivers using `IIO` kernel subsystem, and how to use those drivers from 
+userspace. 
 
 ## Contents ##
 
