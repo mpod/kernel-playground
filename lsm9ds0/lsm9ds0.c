@@ -606,7 +606,7 @@ static irqreturn_t lsm9ds0_trigger_h(int irq, void *p)
   struct iio_poll_func *pf = p;
   struct iio_dev *indio_dev = pf->indio_dev;
   struct lsm9ds0_data *data = iio_priv(indio_dev);
-  u32 *buf_data;
+  s16 *buf_data;
   int i, j;
   s16 x1, y1, z1, x2, y2, z2;
   int err;
